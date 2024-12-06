@@ -1,15 +1,40 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import React from "react";
-import { Dimensions, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import React, { useState } from "react";
+import { ActivityIndicator, Alert, Dimensions, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { requestOTP } from "../redux/slices/forgetslice/forgetthunk";
 
 
 const { width, height } = Dimensions.get("window");
 const Forget = ()=>{
     const navigation:any = useNavigation();
+ const [email, setEmail] = useState("");
+ const [loading, setLoading] = useState(false); 
+  const [error, setError] = useState<string | null>(null);  
+   
+  const handleSubmit = async () => {
+    navigation.navigate('Otpverify' ,{email})
+    if (!email) {
+      console.error("Email is required!");
+      return;  // Ensure the email field is not empty
+    }
+    setLoading(true)
+     
+    
+    try {
+      // Request OTP when the form is submitted
+      const result = await requestOTP(email);
+      console.log("OTP sent successfully:", result);
+    } catch (error: any) {
+      console.error("Failed to request OTP:", error.message);
+   } finally {
+    // Stop loading after the request is finished (success or failure)
+    setLoading(false);
+  }
+};
 
 return(
 
@@ -32,15 +57,30 @@ return(
       <TextInput
         style={style.placeholder}
         placeholder="Enter your email"
+        value={email}
+        onChangeText={setEmail}
        
         keyboardType="email-address"
         autoCapitalize="none"
       />
        </View>
        <View style={{paddingTop:10,marginTop:30,alignSelf:'center'}}>
-        <TouchableOpacity style={style.button} onPress={()=>navigation.navigate("Otpverify")}>
-        <Text style={style.verify}>Verify</Text>
-       </TouchableOpacity></View>
+        
+        <TouchableOpacity
+        style={style.button} // Reduce opacity when loading
+        onPress={handleSubmit}
+       
+      >
+        {loading ? (
+          <ActivityIndicator size="small" color="#silver" /> // Show spinner when loading
+        ) : (
+          <Text style={style.verify}>Verify</Text> // Show text when not loading
+        )}
+      </TouchableOpacity>
+        
+        
+        
+        </View>
     </View>
    
 </KeyboardAwareScrollView>

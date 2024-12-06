@@ -4,14 +4,23 @@ import { Animated, Button, Dimensions, Easing, Image, ScrollView, StyleSheet, Te
 
 import DatePickerModal from "../modal/datepicker";
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { Camera } from "expo-camera";
+import { postData } from "../redux/slices/lead details/leaddetails";
+import CustomModal from "../modal/thankumodal";
+import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
+
+
+interface ApiResponse {
+  success: boolean;
+  message: string;
+}
 
 
 
@@ -19,10 +28,14 @@ import { Camera } from "expo-camera";
 const { width, height } = Dimensions.get("window");
 
 
+
 type Option = {
   label: string;
   value: string;
 };
+
+
+
 
 const options: Option[] = [
   { label: 'Cold Call', value: 'cold_call' },
@@ -32,24 +45,101 @@ const options: Option[] = [
   {label: 'won', value: 'won'}
 ];
 const Leaddetail = ()=>{
-  
-  const [address, setAddress] = useState<string>('');
+ 
+  const route:any = useRoute();
+ const { item } = route.params || {};
+  const { latitude, longitude, address:routeAddress } = route.params || {};
+   console.log(latitude, "kmfkmkem")
+   console.log(item, "itemitem")
+ 
 
+  
+  const [formData, setFormData] = useState({
+    retailerName: item?.name || "",
+    mobile: item?.number || '',
+    outletAddress:"",
+    leadPhase: '',
+    newImage: '',
+    followUpDate: '',
+    latitudeNew:  "",
+    longitudeNew: "",
+    userid:'',
+  });
+   useEffect(() => {
+    if (latitude && longitude) {
+      setFormData((prevData) => ({
+      ...prevData,
+      latitudeNew: latitude.toString() ,
+      longitudeNew: longitude.toString(),
+    }));
+    
+    }
+  }, [latitude, longitude]);
+
+  console.log(formData.latitudeNew, "latitudeNewlatitudeNew")
+
+
+  const [address, setAddress] = useState<string>('');
+  
+const [Loading, setLoading] = useState<boolean>(false); // Loading state
+const [error, setError] = useState(null);
+const [apiResponse, setApiResponse] = useState<ApiResponse | null>(null);
     const [contractNumber, setContractNumber] = useState<string>("");
     const dispatch = useDispatch();
  
 
-const selectedContract = useSelector((state: RootState) => state.contracts.selectedContract);
-console.log("Selected Contract:", selectedContract);
+//const selectedContract = useSelector((state: RootState) => state.contracts.selectedContract);
+//console.log("Selected Contract:", selectedContract);
     const navigation:any = useNavigation();
-    const route:any = useRoute();
-    const { latitude, longitude, address:routeAddress } = route.params || {};
+    
+  
  const [datePickerVisible, setDatePickerVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>("");
+const [selectedOption, setSelectedOption] = useState<string | null>(null);
+const [imageUri, setImageUri] = useState<string | null>(null);
+const [isModalVisible, setModalVisible] = useState(false);
 
-  const handleDateConfirm = (date: Date) => {
-    setSelectedDate(date.toLocaleDateString());
-  };
+
+
+
+useEffect(() => {
+    if (item) {
+      setAddress(item.address || 'No Address');
+      setSelectedDate(item.followupdate || "No Date")
+      setSelectedOption(item.leadphase || "No leadphase")
+      setImageUri(item.image || "No Image")
+     
+  
+      
+    }
+  }, [item]);
+
+
+  useEffect(() => {
+  if (item) {
+    console.log("Item received:", item);
+
+    setFormData((prevData) => ({
+      ...prevData,
+      latitudeNew: item.latitude ,
+      longitudeNew: item.longitude,
+    }));
+    console.log("Latitude set to:", item.latitude || "No Address");
+    console.log("Longitude set to:", item.longitude || "");
+  }
+}, [item])
+
+
+
+  
+ const handleDateConfirm = (date: Date) => {
+  const formattedDate = date.toISOString(); // This formats the date to YYYY-MM-DD
+  setSelectedDate(formattedDate);
+};
+
+
+
+  
 const isValidContractNumber = contractNumber.length === 10;
  useEffect(() => {
     if (routeAddress) {
@@ -57,8 +147,50 @@ const isValidContractNumber = contractNumber.length === 10;
     }
   }, [routeAddress]);
  const [isOpen, setIsOpen] = useState(false);
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  
   const animation = useRef(new Animated.Value(0)).current;
+
+
+
+
+
+
+
+
+
+  const handlePress = async () => {
+
+
+  try {
+
+    const updatedFormData = {
+      ...formData,
+
+      followUpDate: selectedDate,
+      newImage: imageUri, // Ensure imageUri is added
+      leadPhase:selectedOption,
+      latitudeNew:latitude.toString() ,
+      longitudeNew:longitude.toString(),
+      outletAddress:address 
+     
+      
+      
+    };
+     console.log('Form Data Submitted:', updatedFormData);
+
+      // Show modal after submitting data
+      setModalVisible(true);
+
+
+    // Send the updated form data to the backend
+    const response = await postData(updatedFormData);
+    console.log('Data sent successfully:', response);
+  } catch (error) {
+    console.error('Error submitting data:', error);
+  }
+};
+
+
 
   const togglePicker = () => {
     setIsOpen(!isOpen);
@@ -80,7 +212,7 @@ const isValidContractNumber = contractNumber.length === 10;
     outputRange: [0, options.length * 40],
   });
    const [hasPermission, setHasPermission] = useState<boolean | null>(null);
-  const [imageUri, setImageUri] = useState<string | null>(null);
+  
 
 React.useEffect(() => {
     (async () => {
@@ -116,6 +248,7 @@ const deleteImage = () => {
   };
 
 
+
   
     return(
 <KeyboardAwareScrollView
@@ -128,12 +261,20 @@ const deleteImage = () => {
     <View style={style.lead}>
 <Text style={style.details}>LEAD DETAILS</Text>
     </View>
+     <View style={style.retailer}>
+        <Text style={style.name}>UserId</Text>
+        <Text style={style.star}>***</Text>
+       </View>
+       <View    style={{paddingTop:10,alignItems:'center'}}   > <TextInput  
+            value={formData.userid} 
+            onChangeText={(text)=>setFormData({...formData,userid:text})}style={style.input2}></TextInput></View>
     <View style={style.retailer}>
         <Text style={style.name}>RETAILER NAME</Text>
         <Text style={style.star}>***</Text>
        </View>
-       <View style={{paddingTop:10,alignItems:'center'}}> <TextInput  
-            value={selectedContract?.name}              style={style.input2}></TextInput></View>
+       <View    style={{paddingTop:10,alignItems:'center'}}   > <TextInput  
+            value={formData.retailerName} 
+            onChangeText={(text)=>setFormData({...formData,retailerName:text})}style={style.input2}></TextInput></View>
        <View style={style.retailer}>
         <Text style={style.name}>CONTACT NO</Text>
         <Text style={style.star}>***</Text>
@@ -147,11 +288,11 @@ const deleteImage = () => {
         /></TouchableOpacity>
         <TextInput
           style={style.input}
-          value={selectedContract?.contractNumber}
+          value={formData.mobile }
           placeholder="Enter contract number"
           placeholderTextColor="gray"
           keyboardType="numeric"
-            onChangeText={(text) => setContractNumber(text)}
+            onChangeText={(text)=>setFormData({...formData,mobile:text})}
         />
        <TouchableOpacity style={{bottom:10}}> <Image
           source={require("../../../assets/login.png")} style={style.iconRight}
@@ -161,40 +302,48 @@ const deleteImage = () => {
         <Image source={require("../../../assets/check.png")} style={style.tick} />
       )}
         </View>
-        <View style={style.retailer}>
+        {/* <View style={style.retailer}>
         <Text style={style.name}>OUTLET ADDRESS</Text>
         <Text style={style.star}>***</Text>
        </View>
  <View style={{paddingTop:10,alignItems:'center'}}> 
-    <TextInput style={style.input2}></TextInput>
- </View>
- <View style={style.retailer}>
-        <Text style={style.name}>OUTLET ADDRESS</Text>
-        <Text style={style.star}>***</Text>
-       </View>
-       <View style={style.pick}><TouchableOpacity onPress={()=>navigation.navigate("Locationmap")} style={style.location}>
-        <Text style={{color:'white'}}>PICK LOCATION</Text></TouchableOpacity></View>
+    <TextInput 
+         value={formData.outletAddress}
+         onChangeText={(text)=> setFormData({...formData,outletAddress:text})}
+    style={style.input2}>   
+    </TextInput>
+ </View> */}
+ 
+       
 <View style={{flexDirection:'row',left:20,paddingTop:10}}>
 <Text style={style.Latitude}>Latitude</Text>
-<TextInput value={latitude ? latitude.toString() : ""}style={style.num} editable={false} />
+<TextInput value={formData.latitudeNew}style={style.num} editable={false} />
 </View>
 <View style={{flexDirection:'row',left:20,}}>
 <Text style={style.Latitude}>Longitude</Text>
-   <TextInput value={longitude ? longitude.toString() : ""} style={style.num} editable={false} />
+   <TextInput value={formData.longitudeNew} style={style.num} editable={false} />
 </View>
+<View style={style.retailer}>
+        <Text style={style.name}>OUTLET ADDRESS</Text>
+        <Text style={style.star}>***</Text>
+       </View>
+       
 <View style={{paddingTop:10,alignItems:'center'}}> 
   <TextInput value={address} style={style.input2} editable={true} 
   onChangeText={(text : string)=>setAddress(text)}
-  placeholder="Enter your address" >
+  placeholder="Enter your address">
     
     </TextInput></View>
+    <View style={style.pick}><TouchableOpacity onPress={()=>navigation.navigate("Locationmap")} style={style.location}>
+        <Text style={{color:'white',textAlign:'center',fontSize:RFPercentage(15)}}   adjustsFontSizeToFit={true}>PICK LOCATION</Text></TouchableOpacity></View>
 <View style={style.retailer}>
         <Text style={style.name}>FOLLOW UP DATE</Text>
         <Text style={style.star}>***</Text>
        </View>
-       <View style={{ paddingTop: 10, alignItems: "center" }}>
+       <View style={{ paddingTop: 10, alignItems: "center"}}>
         <View style={style.inputWrapper}>
           <TextInput
+          
             style={style.input}
             placeholder="Select a date"
             placeholderTextColor="gray"
@@ -206,6 +355,7 @@ const deleteImage = () => {
               source={require("../../../assets/schedule (1).png")} // Replace with your icon
               style={style.iconLeft2}
             />
+            
           </TouchableOpacity>
         </View>
       </View>
@@ -228,6 +378,7 @@ const deleteImage = () => {
             ? options.find((opt) => opt.value === selectedOption)?.label
             : 'Select an option'}
         </Text>
+        <Ionicons name='arrow-down' size={20}></Ionicons>
         
       </TouchableOpacity>
       <Animated.View style={[style.optionsContainer, { height: heightInterpolation }]}>
@@ -277,8 +428,15 @@ const deleteImage = () => {
 
         </View>
         <View style={{paddingTop:20,paddingBottom:20,alignItems:'center'}}>
-            <TouchableOpacity onPress={()=>navigation.navigate("LeadFollow")} style={style.next}><Text style={{color:'white'}}>Next</Text></TouchableOpacity>
+              <TouchableOpacity onPress={handlePress} style={style.next}><Text style={{color:'white'}}>Sumbit</Text></TouchableOpacity>
+
+               {/* Modal */}
+      <CustomModal
+        isVisible={isModalVisible}
+        onClose={() => setModalVisible(false)} // Close the modal
+      />
         </View>
+        
 
 
 </KeyboardAwareScrollView>
@@ -337,9 +495,9 @@ input:{ flex: 1,
     backgroundColor: 'rgb(30,129,176)',       
     paddingVertical: 10,
     width:width* 0.9,   
-    height:50,          
+    height:40,          
     paddingHorizontal: 30,             
-    borderRadius: 10,                
+    borderRadius: 20,                
     alignItems: "center",             
     justifyContent: "center",         
     elevation: 3,                     
@@ -353,7 +511,8 @@ input:{ flex: 1,
     height: 20,
     right:20},
 
-    next:{backgroundColor: 'rgb(30,129,176)',       
+    next:{backgroundColor: 'rgb(30,129,176)',   
+    
     paddingVertical: 10,
     width:width* 0.9,   
     height:50,          

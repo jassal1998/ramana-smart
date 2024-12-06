@@ -1,15 +1,79 @@
 import { useNavigation } from "@react-navigation/native";
-import React from "react";
-import { Dimensions, Image, ImageBackground, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import React, { useState } from "react";
+import { ActivityIndicator, Alert, Dimensions, Image, ImageBackground, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { requestLogin } from "../redux/slices/login/thunk";
+import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
+
+
+
 
 
 const { width, height } = Dimensions.get("window");
 
 const Login =()=>{
+
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+ const [errorMessage, setErrorMessage] = useState('');
    const navigation:any = useNavigation();
+
+
+
+
+
+   const validateEmail = (email: string) => {
+    const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+    return regex.test(email);
+  };
+
+
+
+
+
+const handleLogin = async () => {
+
+    if (!email || !password) {
+      setErrorMessage("Please enter both email and password.");
+      return;
+    }
+    
+    if (!validateEmail(email)) {
+      setErrorMessage("Please enter a valid email.");
+      return;
+    }
+    
+    setLoading(true);
+    setErrorMessage(''); // Clear previous errors
+
+    try {
+      await requestLogin(email, password, navigation.navigate);
+      setLoading(false)
+      navigation.navigate('Mydrawer', { screen: 'LeadFollow' });
+    } catch (error: any) {
+      
+      setLoading(false)
+      setErrorMessage(error.message || 'Wrong Email Pasword');
+
+if (error.message.includes("Wrong password")) {
+      setErrorMessage("Incorrect password. Please try again.");
+    } else if (error.message.includes("email not found")) {
+      setErrorMessage("Email not found. Please check the entered email.");
+    } else {
+      setErrorMessage(error.message || 'Something went wrong. Please try again.');
+    }
+
+    }
+  };
+
+  
+ 
+
+
+   
 
 return(
     <KeyboardAwareScrollView
@@ -29,22 +93,45 @@ return(
    <View style={style.input}>
     
        
-     <TextInput  placeholder="Enter your email" placeholderTextColor="silver" style={style.placeholder}> 
+     <TextInput  placeholder="Enter your email" placeholderTextColor="silver" 
+        value={email} onChangeText={setEmail}          style={[style.placeholder,{fontSize:RFPercentage(1.80)}]}> 
      </TextInput>
      <View style={{paddingTop:10}}>
-      <TextInput  placeholder="Enter your Password" placeholderTextColor="silver" style={style.placeholder}> 
+      <TextInput  placeholder="Enter your Password" placeholderTextColor="silver"
+       value={password}
+       onChangeText={setPassword}
+      style={[style.placeholder,{fontSize:RFPercentage(1.80)}]}> 
      </TextInput></View>
-     <View style={{paddingTop:5}}>
+     <View style={{paddingTop:5,}}>
       <TouchableOpacity  onPress={()=>navigation.navigate("Forget")}>
         <Text style={style.forget}>Forget password</Text></TouchableOpacity>
+        
      </View>
 
 
    </View>
       <View style={{paddingTop:40,alignItems:'center'}}>
-        <TouchableOpacity   onPress={() => navigation.navigate("Otp")} 
-         style={style.button}><Text style={style.login}> Login</Text></TouchableOpacity>
+       <TouchableOpacity 
+            onPress={handleLogin} 
+            style={[style.button, loading && { backgroundColor: 'gray' }]} 
+           
+          >
+            {loading ? (
+              <ActivityIndicator size="small" color="#000" />
+            ) : (
+              <Text style={style.login}>Login</Text>
+            )}
+          </TouchableOpacity>
      </View>
+     {/* <View style={{paddingTop:5,flexDirection:"row"}}>
+      
+        <Text style={style.account}> Doesn't have an acconut?</Text>
+        <TouchableOpacity  onPress={()=>navigation.navigate("Forget")}>
+        <Text style={style.signup}>Sign up</Text></TouchableOpacity>
+        
+        
+     </View> */}
+     
    </View>
    </KeyboardAwareScrollView>
 
@@ -77,6 +164,9 @@ imagewrapper:{
      input:{paddingTop:20,justifyContent:'center',alignSelf:'center'},
     
      placeholder:{
+      fontSize:10,
+      padding:10,
+      fontFamily:'Arial',
     height: 40,
     color:"white",
     width:width* 0.8,
@@ -84,7 +174,7 @@ imagewrapper:{
     borderWidth: 1,
     borderRadius: 10,
     paddingLeft: 15,
-    fontSize: 16,
+    
     //backgroundColor:"#A6A4F4",
     },
     button:{
@@ -105,6 +195,11 @@ login:{ color: "balck",
     fontSize: 18,
     fontWeight: "bold",
     textAlign: "center"},
-    forget:{color:"white",left:10}
+    forget:{color:"white",textAlign:'right',},
+    signup:{}
 })
 export default Login;
+
+function getResponsiveFontSize(basePercentage: number) {
+  throw new Error("Function not implemented.");
+}

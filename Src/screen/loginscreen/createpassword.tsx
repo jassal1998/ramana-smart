@@ -8,7 +8,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 
 const { width, height } = Dimensions.get("window");
 
-const createpassword = () =>{
+const Createpassword = () =>{
     const navigation:any = useNavigation();
 
     return(
@@ -108,5 +108,5 @@ login:{ color: "balck",
     forget:{color:"white",left:10}
 
 })
-export default createpassword
+export default Createpassword
 

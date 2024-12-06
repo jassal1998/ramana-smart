@@ -4,6 +4,7 @@ import { Dimensions, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOp
 
 
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { verifyOtp } from "../redux/slices/forgetslice/forgetthunk";
 
 
 const { width, height } = Dimensions.get("window");
@@ -32,16 +33,32 @@ const handleChange = (text: string, index: number) => {
   };
 
 
-  const handleSubmit = () => {
-      navigation.navigate("createpassword");
+    const handleSubmit = async () => {
     const enteredOtp = otp.join("");
     console.log("Entered OTP:", enteredOtp);
+
     if (enteredOtp.length === 4) {
-     
+      try {
+        const emailOrPhone = "userEmailOrPhone"; // Replace with the actual email or phone value
+        const response = await verifyOtp(enteredOtp, emailOrPhone);
+        
+        if (response.success) {
+          // Navigate to the next screen on successful OTP verification
+          navigation.navigate("createpassword");
+        } else {
+          alert("Invalid OTP. Please try again.");
+        }
+      } catch (error) {
+        console.error("OTP verification failed:", error);
+        alert("There was an error verifying your OTP. Please try again later.");
+      }
     } else {
       alert("Please enter a valid 4-digit OTP.");
     }
   };
+
+
+
 
 
 
