@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const postData = async (requestData: any) => {
-  const url = 'http://192.168.1.16:3000/userprofile'; // Replace with your API endpoint
+  const url = 'https://api.ramanamachines.com:4000 /userprofile'; // Replace with your API endpoint
 
   console.log('Request Data being sent:', requestData);
 

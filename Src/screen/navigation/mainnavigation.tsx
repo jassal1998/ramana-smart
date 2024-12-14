@@ -44,7 +44,7 @@ const headerOptions = {
        gestureEnabled: true,headerShown:false }}/>
         <Stack.Screen name="Forget" component={Forget}/>
          <Stack.Screen name="Attendancs" component={Attendancs} options={{headerStyle:{backgroundColor:'rgb(30,129,176)'},
-       headerTintColor:'white' }}/>
+       headerTintColor:'white' ,headerBackTitle:""}}/>
         <Stack.Screen name="Otpverify" component={Otpverify}/> 
         <Stack.Screen name="createpassword" component={createpassword}/>
         <Stack.Screen name="Otp" component={Otp}/>
@@ -52,7 +52,8 @@ const headerOptions = {
          headerBackTitle:"",
         gestureEnabled: true, headerTintColor:'white',}}/>
        {/* <Stack.Screen name="LeadFollow" component={LeadFollow}/> */}
-       <Stack.Screen name="Locationmap" component={Locationmap}/>
+       <Stack.Screen name="Locationmap" component={Locationmap} options={{ headerStyle:{backgroundColor:'rgb(30,129,176)'},
+       headerBackTitle:"", headerTintColor:'white'}}/>
       <Stack.Screen name="Mydrawer" component={Mydrawer} options={{headerShown:false}}/>
        
     </Stack.Navigator>    

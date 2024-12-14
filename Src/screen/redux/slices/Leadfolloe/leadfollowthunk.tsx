@@ -3,7 +3,7 @@ import axios from "axios";
 export const fetchData = async () => {
   try {
     console.log('Attempting to fetch data...');
-    const response = await axios.get('http://192.168.1.16:3000/leads/2');
+    const response = await axios.get('https://api.ramanamachines.com:4000 /leads/2');
     console.log('API Response:', response.data);
     return response.data;
   } catch (error:any) {

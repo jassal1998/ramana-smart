@@ -3,7 +3,7 @@ import axios from "axios";
 
 export const requestOTP = async (email: string) => {
   try {
-    const response = await axios.post("http://192.168.1.22:3000/forgetpassword", {
+    const response = await axios.post("https://api.ramanamachines.com:4000 /forgetpassword", {
       email,
     });
     console.log("OTP sent successfully:", response.data);

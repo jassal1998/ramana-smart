@@ -46,14 +46,14 @@ const  Mydrawer = ()=>{
         <ImageBackground source={require('../../../assets/logo2.jpeg')} style={style.image}>
         </ImageBackground>
         <View style={{position:'absolute',top:'35%',flexDirection:"row",}}>
-           <TouchableOpacity style={style.button} onPress={()=>navigation.navigate('Attendancs')}>
+           <TouchableOpacity style={style.button} onPress={()=>navigation.navigate('Leaddetail')}>
         <Ionicons name="navigate" size={20} color="white" style={style.icon} />
-        <Text style={style.text}>Attendence</Text>
+        <Text style={style.text}>Lead Create</Text>
       </TouchableOpacity>
         </View>
-         <TouchableOpacity style={style.button2} onPress={()=>navigation.navigate('Leaddetail')}>
+         <TouchableOpacity style={style.button2} onPress={()=>navigation.navigate('Attendancs')}>
         <Ionicons name='pencil' size={20} color="white" style={style.icon} />
-        <Text style={style.text}>Lead Create</Text>
+        <Text style={style.text}>Attendence</Text>
       </TouchableOpacity>
         <View style={{position:'absolute',bottom:50}}>
           <TouchableOpacity style={{flexDirection:'row'}} onPress={()=>navigation.navigate('Login')}>
