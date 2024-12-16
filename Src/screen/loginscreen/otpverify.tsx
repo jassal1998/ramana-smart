@@ -1,21 +1,27 @@
 import { useNavigation } from "@react-navigation/native";
 import React, { useRef, useState } from "react";
-import { Dimensions, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  Dimensions,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { verifyOtp } from "../redux/slices/forgetslice/forgetthunk";
-
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { verifyOtp } from "../../slices/forgetslice/forgetthunk";
 
 const { width, height } = Dimensions.get("window");
 
-const Otpverify = () =>{
-     const navigation:any = useNavigation();
-const [otp, setOtp] = useState<string[]>(["", "", "", ""]);
-   const inputs = useRef<Array<TextInput | null>>([]);
+const Otpverify = () => {
+  const navigation: any = useNavigation();
+  const [otp, setOtp] = useState<string[]>(["", "", "", ""]);
+  const inputs = useRef<Array<TextInput | null>>([]);
 
-
-const handleChange = (text: string, index: number) => {
+  const handleChange = (text: string, index: number) => {
     const newOtp = [...otp];
     newOtp[index] = text;
 
@@ -32,8 +38,7 @@ const handleChange = (text: string, index: number) => {
     setOtp(newOtp); // Always update the OTP state
   };
 
-
-    const handleSubmit = async () => {
+  const handleSubmit = async () => {
     const enteredOtp = otp.join("");
     console.log("Entered OTP:", enteredOtp);
 
@@ -41,7 +46,7 @@ const handleChange = (text: string, index: number) => {
       try {
         const emailOrPhone = "userEmailOrPhone"; // Replace with the actual email or phone value
         const response = await verifyOtp(enteredOtp, emailOrPhone);
-        
+
         if (response.success) {
           // Navigate to the next screen on successful OTP verification
           navigation.navigate("createpassword");
@@ -57,38 +62,38 @@ const handleChange = (text: string, index: number) => {
     }
   };
 
-
-
-
-
-
-return(
-<KeyboardAwareScrollView
-      style={{ backgroundColor:'#6F6AF0',flex:1,}}
+  return (
+    <KeyboardAwareScrollView
+      style={{ backgroundColor: "#6F6AF0", flex: 1 }}
       //contentContainerStyle={{ flexGrow: 1 }}
       enableOnAndroid={true} // Enable for Android
       keyboardOpeningTime={0} // Adjust the time for keyboard opening
     >
-<View >
-     <View style={style.imagewrapper}>
-<Image   source={require("../../../assets/psss.jpg")} style={style.image}/>
-   </View>
-   <View style={{paddingTop:10,flexDirection:"row",alignSelf:'center'}}>
-    <Text style={style.otp}>OTP Code </Text>
-    <Text style={style.verify}>Verification </Text>
-   </View>
-   {/* <View style={{paddingTop:5,padding:10}}>
+      <View>
+        <View style={style.imagewrapper}>
+          <Image
+            source={require("../../../assets/psss.jpg")}
+            style={style.image}
+          />
+        </View>
+        <View
+          style={{ paddingTop: 10, flexDirection: "row", alignSelf: "center" }}
+        >
+          <Text style={style.otp}>OTP Code </Text>
+          <Text style={style.verify}>Verification </Text>
+        </View>
+        {/* <View style={{paddingTop:5,padding:10}}>
     <Text style={style.phone}>We have sent an OTP code to your Phone No
         +91******88 Enter the code below to verify
     </Text>
    </View> */}
-    <View style={style.otpContainer}>
+        <View style={style.otpContainer}>
           {otp.map((value, index) => (
             <TextInput
               key={index}
               style={style.otpBox}
               value={value}
-             onChangeText={(text)=>handleChange(text,index)}
+              onChangeText={(text) => handleChange(text, index)}
               keyboardType="numeric"
               maxLength={1}
               ref={(ref) => (inputs.current[index] = ref)}
@@ -96,33 +101,33 @@ return(
             />
           ))}
         </View>
-         <View style={style.submitButtonContainer}>
-          <TouchableOpacity    style={style.submitButton} onPress={handleSubmit}>
+        <View style={style.submitButtonContainer}>
+          <TouchableOpacity style={style.submitButton} onPress={handleSubmit}>
             <Text style={style.submitButtonText}>Verify</Text>
           </TouchableOpacity>
         </View>
-</View>
-</KeyboardAwareScrollView>
-)
-
-}
+      </View>
+    </KeyboardAwareScrollView>
+  );
+};
 const style = StyleSheet.create({
-  imagewrapper:{
-     width: "100%",
-      height: height * 0.4 ,
-   // height: "80%",
+  imagewrapper: {
+    width: "100%",
+    height: height * 0.4,
+    // height: "80%",
     borderBottomLeftRadius: "70%",
-    borderBottomRightRadius: '70%',
+    borderBottomRightRadius: "70%",
     overflow: "hidden", // Ensures child respects borderRadius
-    position: "relative",},
-     image:{
-   width: "100%",
-    height: height*0.4
-     },
-otp:{fontSize:25,fontWeight:'500',color:'white'},
-verify:{fontSize:25,fontWeight:"300",color:'white'},
-phone:{textAlign:"center",color:"white"},
- otpContainer: {
+    position: "relative",
+  },
+  image: {
+    width: "100%",
+    height: height * 0.4,
+  },
+  otp: { fontSize: 25, fontWeight: "500", color: "white" },
+  verify: { fontSize: 25, fontWeight: "300", color: "white" },
+  phone: { textAlign: "center", color: "white" },
+  otpContainer: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
@@ -145,18 +150,18 @@ phone:{textAlign:"center",color:"white"},
     alignItems: "center",
   },
   submitButton: {
-    width:width* 0.9,
-    marginTop:40,
+    width: width * 0.9,
+    marginTop: 40,
     backgroundColor: "#fff",
     paddingVertical: 10,
     paddingHorizontal: 30,
     borderRadius: 20,
   },
   submitButtonText: {
-    textAlign:'center',
+    textAlign: "center",
     color: "#6F6AF0",
     fontWeight: "bold",
     fontSize: 16,
   },
-})
-export default Otpverify
+});
+export default Otpverify;
