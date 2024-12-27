@@ -6,6 +6,7 @@ import { ActivityIndicator, Alert, Dimensions, Image, ImageBackground, Platform,
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { requestLogin } from "../redux/slices/login/thunk";
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
+import { useDispatch } from "react-redux";
 
 
 
@@ -20,8 +21,8 @@ const Login =()=>{
   const [loading, setLoading] = useState<boolean>(false);
  const [errorMessage, setErrorMessage] = useState('');
    const navigation:any = useNavigation();
-
-
+const dispatch:any = useDispatch();
+   
 
 
 
@@ -50,9 +51,9 @@ const handleLogin = async () => {
     setErrorMessage(''); // Clear previous errors
 
     try {
-      await requestLogin(email, password, navigation.navigate);
+      await requestLogin(email, password, navigation.navigate)
       setLoading(false)
-      navigation.navigate('Mydrawer', { screen: 'LeadFollow' });
+     // navigation.navigate('Mydrawer', { screen: 'LeadFollow' });
     } catch (error: any) {
       
       setLoading(false)
@@ -107,6 +108,12 @@ return(
         <Text style={style.forget}>Forget password</Text></TouchableOpacity>
         
      </View>
+     {errorMessage ? (
+          <View style={{ paddingTop: 10, alignItems: 'center' }}>
+            <Text style={{ color: 'red',  }}>{errorMessage}</Text>
+          </View>
+        ) : null}
+
 
 
    </View>

@@ -8,15 +8,11 @@ export const requestLogin = async (
 ): Promise<void> => {
   console.log(email, 'gggttt')
   try {
-    const response = await axios.post('https://api.ramanamachines.com:4000 /signin', {
+    const response = await axios.post('https://api.ramanamachines.com:4000/signin', {
       email,
       password,
     });
-console.log(response, 'hjhjhj')
-    console.log('Making login request with email:', email, 'and password:', password);
-    console.log('API Response Status:', response.status); // Log the status code
-    console.log('API Response Body:', response.data); // Log the response body
-
+    console.log(response,"jhjhjh")
     if (response.headers['content-type'].includes('application/json')) {
       const responseData = response.data;
 
@@ -25,7 +21,7 @@ console.log(response, 'hjhjhj')
       // Check if fetchedUser and token exist
       if (responseData.fetchedUser && responseData.token) {
         console.log('Login successful:', responseData.message || 'Login successful');
-        navigateToPage('LeadFollow'); // Navigate to Home or Dashboard page
+        //navigateToPage('LeadFollow'); // Navigate to Home or Dashboard page
       } else {
         console.error('Login Failed:', responseData.message || 'Invalid email or password');
         throw new Error(responseData.message || 'Failed to login.');

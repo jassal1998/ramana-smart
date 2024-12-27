@@ -98,7 +98,7 @@ const [apiResponse, setApiResponse] = useState<ApiResponse | null>(null);
 const [selectedOption, setSelectedOption] = useState<string | null>(null);
 const [imageUri, setImageUri] = useState<string | null>(null);
 const [isModalVisible, setModalVisible] = useState(false);
-
+const [errorMessage, setErrorMessage] = useState('');
 
 
 
@@ -179,14 +179,21 @@ const isValidContractNumber = contractNumber.length === 10;
      console.log('Form Data Submitted:', updatedFormData);
 
       // Show modal after submitting data
-      setModalVisible(true);
+      
 
 
     // Send the updated form data to the backend
     const response = await postData(updatedFormData);
     console.log('Data sent successfully:', response);
+    setModalVisible(true);
+    setErrorMessage(''); 
   } catch (error) {
     console.error('Error submitting data:', error);
+   setErrorMessage('Plzz check network');
+    setModalVisible(false);
+ 
+ 
+ 
   }
 };
 
@@ -274,7 +281,10 @@ const deleteImage = () => {
        </View>
        <View    style={{paddingTop:10,alignItems:'center'}}   > <TextInput  
             value={formData.retailerName} 
-            onChangeText={(text)=>setFormData({...formData,retailerName:text})}style={style.input2}></TextInput></View>
+            onChangeText={(text)=>setFormData({...formData,retailerName:text})}style={style.input2}>
+            </TextInput>
+              {errorMessage ? <Text style={{ color: 'red' ,paddingTop:5}}>{errorMessage}</Text> : null}
+           </View>
        <View style={style.retailer}>
         <Text style={style.name}>CONTACT NO</Text>
         <Text style={style.star}>***</Text>
@@ -301,7 +311,9 @@ const deleteImage = () => {
    {isValidContractNumber && (
         <Image source={require("../../../assets/check.png")} style={style.tick} />
       )}
+
         </View>
+         {errorMessage ? <Text style={{ color: 'red' ,paddingTop:5}}>{errorMessage}</Text> : null}
         {/* <View style={style.retailer}>
         <Text style={style.name}>OUTLET ADDRESS</Text>
         <Text style={style.star}>***</Text>
@@ -357,7 +369,11 @@ const deleteImage = () => {
             />
             
           </TouchableOpacity>
+        
         </View>
+          {errorMessage && formData.retailerName === '' && (
+    <Text style={{ color: 'red',padding:5 }}>{errorMessage}</Text>
+  )}
       </View>
 
       {/* Date Picker Modal */}
@@ -388,11 +404,14 @@ const deleteImage = () => {
             style={style.option}
             onPress={() => handleOptionPress(option.value)}
           >
+            
             <Text style={style.optionText}>{option.label}</Text>
           </TouchableOpacity>
         ))}
       </Animated.View>
-       
+       {errorMessage && formData.retailerName === '' && (
+    <Text style={{ color: 'red',padding:5 }}>{errorMessage}</Text>
+  )}
     </View>
     
         <View style={style.retailer}>
@@ -413,6 +432,7 @@ const deleteImage = () => {
         <TouchableOpacity style={style.cameraIcon} onPress={openCamera}>
           <Ionicons name="camera-outline" size={30} color="#fff" />
         </TouchableOpacity>
+        
 
         {imageUri && (
     <TouchableOpacity
@@ -423,7 +443,9 @@ const deleteImage = () => {
     </TouchableOpacity>
   )}
       </View>
-
+ {errorMessage && formData.retailerName === '' && (
+    <Text style={{ color: 'red',padding:5 }}>{errorMessage}</Text>
+  )}
 
 
         </View>

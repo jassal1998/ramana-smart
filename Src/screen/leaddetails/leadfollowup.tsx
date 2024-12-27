@@ -42,9 +42,9 @@ const [isLoading, setIsLoading] = useState(false);
  const [data, setData] = useState<ContractItem[]>([
  
    
-    { id: "1", number: "", name: "Manna Machines", contractNumber: "9855097195",followupdate:"",leadphase:"follow_up_call",},
-    { id: "2", number: "", name: "Pub Sohna", contractNumber: "8360042904",followupdate:"",leadphase:"follow_up_call,cold_call", },
-    { id: "3", number: "", name: "Test",contractNumber: "8872420478",followupdate:"",leadphase:"cold_call",},
+    { id: "1", number: "", name: "", contractNumber: "9855097195",followupdate:"",leadphase:"follow_up_call",},
+    { id: "2", number: "", name: "", contractNumber: "8360042904",followupdate:"",leadphase:"", },
+    { id: "3", number: "", name: "",contractNumber: "8872420478",followupdate:"",leadphase:"cold_call",},
   
   ]);
 
@@ -65,6 +65,7 @@ const [isLoading, setIsLoading] = useState(false);
   return matchesSearchQuery && matchesAll;
 });
 
+const hasApiData = data.length > 0;
 
 
 
