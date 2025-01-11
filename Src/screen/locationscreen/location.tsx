@@ -126,10 +126,7 @@ const Locationmap = () =>{
        
       </MapView>
 
-      {/* Button to get current location */}
-      <TouchableOpacity style={style.button} onPress={centerToCurrentLocation}>
-        <Text style={style.buttonText}>Locate Me</Text>
-      </TouchableOpacity>
+      
       <View style={style.addressContainer}>
         {errorMsg ? (
           <Text style={style.addressText}>{errorMsg}</Text>
@@ -143,6 +140,10 @@ const Locationmap = () =>{
             )}
           </>
         )}
+         <View>
+      <TouchableOpacity style={style.button} onPress={centerToCurrentLocation}>
+        <Text style={style.buttonText} allowFontScaling={false}>Locate Me</Text>
+      </TouchableOpacity></View>
       </View>
         
     </View>
@@ -184,15 +185,17 @@ const style = StyleSheet.create({
     color: 'gray',
   },
   button: {
-    position: 'absolute',
-    bottom: 20,
-    left: width * 0.35,
+    marginTop:10,
+    
+   alignSelf:'center',
+   width:'100%',
     backgroundColor: '#007AFF',
     padding: 10,
     borderRadius: 25,
     elevation: 5,
   },
   buttonText: {
+    textAlign:'center',
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',

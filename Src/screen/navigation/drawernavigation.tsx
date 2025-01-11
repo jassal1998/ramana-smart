@@ -16,6 +16,7 @@ const  Mydrawer = ()=>{
  const navigation:any = useNavigation();
 
     return(
+      
         
 <Drawer.Navigator
      initialRouteName="LeadFollow"
@@ -43,8 +44,14 @@ const  Mydrawer = ()=>{
       }}
        drawerContent={() => (
         <View style={style.drawerContent}>
-        <ImageBackground source={require('../../../assets/logo2.jpeg')} style={style.image}>
-        </ImageBackground>
+          
+        <View style={style.container}>
+  <ImageBackground 
+    source={require('../../../assets/1669189107737.jpeg')} 
+    style={style.image}
+  >
+  </ImageBackground>
+</View>
         <View style={{position:'absolute',top:'35%',flexDirection:"row",}}>
            <TouchableOpacity style={style.button} onPress={()=>navigation.navigate('Leaddetail')}>
         <Ionicons name="navigate" size={20} color="white" style={style.icon} />
@@ -69,10 +76,12 @@ const  Mydrawer = ()=>{
         
 
       <Drawer.Screen
+      
         name="LeadFollow"
         component={LeadFollow}
         options={{
-          title: 'Lead Follow-up', 
+          title: 'Daily Visits', 
+          headerTitleAlign: 'center',
           headerStyle: {
             backgroundColor: 'rgb(30,129,176)', 
           },
@@ -83,13 +92,21 @@ const  Mydrawer = ()=>{
             
             fontSize: 20,
           },
+           headerRight: () => (
+      <TouchableOpacity
+        onPress={() => navigation.navigate('Leaddetail')} 
+        style={{ marginRight: 20 }}
+      >
+        <Ionicons name="add-circle" size={30} color="#fff"  style={{left:20}}/> 
+        <Text style={{color:'white'}}>Create Lead</Text>
+      </TouchableOpacity>
+    ),
         }}
+        
       />
     </Drawer.Navigator>
  
 
-
- 
     )
 
 }
@@ -106,6 +123,26 @@ const style =StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
   },
+  container: {
+  width: '60%', 
+  height:200,
+  top:50,
+  position:"absolute",    
+  justifyContent: 'center', 
+  alignItems: 'center',
+  borderRadius: 20,  
+  overflow: 'hidden', 
+  marginTop: 10,  
+},
+
+image: {
+  width: '100%',  // Image should take full width of the container
+  height: '100%', // Image should take full height of the container
+  resizeMode: 'stretch',  // Ensures the image covers the area while maintaining aspect ratio
+  borderBottomEndRadius: 20, // Rounded bottom-right corner
+  borderBottomLeftRadius: 20, // Rounded bottom-left corner
+  overflow: 'hidden',  // Prevents overflow outside of the rounded corners
+},
    customDrawerView: {
     padding:20,
     
@@ -125,16 +162,7 @@ const style =StyleSheet.create({
    borderRadius:100
     
   },
-   image: {
-   width: Math.min(width * 0.8, width),
-    height: height / 3, // Set the height to cover the top half of the screen
-    resizeMode: 'cover', // Ensure the image covers the area (it might crop)
-    position: 'absolute', // Position the image at the top
-    top: 0, // Align the image to the top 
-     borderBottomEndRadius: 20, // Round the bottom-right corner
-    borderBottomLeftRadius: 20,
-    overflow: 'hidden'
-  },
+   
   button: {
     
     width:width*0.7,

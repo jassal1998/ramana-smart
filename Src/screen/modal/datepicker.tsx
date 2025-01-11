@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Modal, View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { Modal, View, Text, TouchableOpacity, StyleSheet, Platform } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
 interface DatePickerModalProps {
@@ -10,34 +10,61 @@ interface DatePickerModalProps {
 
 const DatePickerModal: React.FC<DatePickerModalProps> = ({ visible, onClose, onConfirm }) => {
   const [date, setDate] = useState(new Date());
+  const [tempDate, setTempDate] = useState<Date | null>(null); // Temporary date for Android
+
+  const handleDateChange = (event: any, selectedDate?: Date) => {
+    if (Platform.OS === "android") {
+      if (event.type === "set" && selectedDate) {
+        setTempDate(selectedDate); // Set temp date
+        onConfirm(selectedDate); // Confirm and close
+        onClose();
+      } else if (event.type === "dismissed") {
+        onClose(); // Dismiss the modal
+      }
+    } else {
+      if (selectedDate) setDate(selectedDate); // For iOS, update the state only
+    }
+  };
 
   return (
     <Modal transparent visible={visible} animationType="slide">
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <Text style={styles.title}>Select a Date</Text>
-          <DateTimePicker
-            value={date}
-            mode="date"
-            display="spinner"
-            onChange={(event, selectedDate) => {
-              if (selectedDate) setDate(selectedDate);
-            }}
-          />
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity onPress={onClose} style={styles.button}>
-              <Text style={styles.buttonText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => {
-                onConfirm(date);
-                onClose();
+          {Platform.OS === "ios" && (
+            <DateTimePicker
+              value={date}
+              mode="date"
+              display="spinner"
+              onChange={(event, selectedDate) => {
+                if (selectedDate) setDate(selectedDate);
               }}
-              style={[styles.button, styles.confirmButton]}
-            >
-              <Text style={styles.buttonText}>Confirm</Text>
-            </TouchableOpacity>
-          </View>
+            />
+          )}
+          {Platform.OS === "android" && (
+            <DateTimePicker
+              value={tempDate || new Date()}
+              mode="date"
+              display="default"
+              onChange={handleDateChange}
+            />
+          )}
+          {Platform.OS === "ios" && (
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity onPress={onClose} style={styles.button}>
+                <Text style={styles.buttonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  onConfirm(date);
+                  onClose();
+                }}
+                style={[styles.button, styles.confirmButton]}
+              >
+                <Text style={styles.buttonText}>Confirm</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       </View>
     </Modal>
@@ -84,5 +111,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DatePickerModal
-
+export default DatePickerModal;

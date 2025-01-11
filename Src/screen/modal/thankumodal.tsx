@@ -15,6 +15,7 @@ interface CustomModalProps {
 const {width,height}=Dimensions.get('window')
 
 const CustomModal: React.FC<CustomModalProps> = ({ isVisible , onClose }) => {
+  
   return (
     <Modal
       transparent
