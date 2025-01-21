@@ -19,6 +19,7 @@ import { requestLogin } from "../../slices/thunk";
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 import { useDispatch, useSelector } from "react-redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import CustomToast from "../customTost/Tost";
 
 const { width, height } = Dimensions.get("window");
 
@@ -31,6 +32,8 @@ const Login = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
    const [isAllSelected, setIsAllSelected] = useState(false);
+   const [toastVisible, setToastVisible] = useState(false);
+     const [toastMessage, setToastMessage] = useState("");
   const navigation: any = useNavigation();
 
 const handleSelectionChange = (event:any) => {
@@ -69,6 +72,7 @@ const handleSelectionChange = (event:any) => {
 
    
  const savetoken= await AsyncStorage.getItem("userToken")
+ 
  if(savetoken){
    console.log("Retrieved token from AsyncStorage:", savetoken);
    console.log("token",savetoken)
@@ -93,6 +97,7 @@ const handleSelectionChange = (event:any) => {
   
       setErrorMessage(errorApi);
       setLoading(false);
+       
     }
   };
 useEffect(() => {
@@ -179,6 +184,7 @@ useEffect(() => {
               <Text style={style.login}>Login</Text>
             )}
           </TouchableOpacity>
+          <CustomToast visible={toastVisible} message={toastMessage}/> 
         </View>
         {/* <View style={{paddingTop:5,flexDirection:"row"}}>
       

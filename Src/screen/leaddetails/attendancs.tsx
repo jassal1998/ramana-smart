@@ -138,58 +138,50 @@ const [isModalVisible, setModalVisible] = useState(false);
    };
    
 
- const getLocation = async () => {
-  try {
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== 'granted') {
-      alert('Permission to access location was denied');
-      return null; // Return null if permission is denied
+  const getLocation = async () => {
+    try {
+      if (isLoading) return;
+      setIsLoading(true)
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        alert('Permission to access location was denied');
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({});
+      const { latitude, longitude } = location.coords;
+
+      setLatitude(latitude.toString());
+      setLongitude(longitude.toString());
+
+      setAttendenceData((prevState) => ({
+        ...prevState,
+        latitude: latitude.toString(),
+        longitude: longitude.toString(),
+      }));
+
+      const geocodedLocation = await Location.reverseGeocodeAsync({ latitude, longitude });
+      if (geocodedLocation.length > 0) {
+        const { street, city, country } = geocodedLocation[0];
+        const fullAddress = `${street}, ${city}, ${country}`;
+        setAddress(fullAddress);
+      } else {
+        setAddress('Address not found');
+      }
+    } catch (error) {
+      console.error("Error getting location or address:", error);
+    }finally {
+      setIsLoading(false); 
     }
-
-    const location = await Location.getCurrentPositionAsync({});
-    const { latitude, longitude } = location.coords;
-
-    // Reverse geocode the location to get the address
-    const geocodedLocation = await Location.reverseGeocodeAsync({ latitude, longitude });
-    const fullAddress =
-      geocodedLocation.length > 0
-        ? `${geocodedLocation[0].street}, ${geocodedLocation[0].city}, ${geocodedLocation[0].country}`
-        : 'Address not found';
-
-    return { latitude, longitude, fullAddress };
-  } catch (error) {
-    console.error('Error getting location or address:', error);
-    return null; // Return null in case of errors
-  }
-};
+  };
 
 const handleStatusChange = async (newStatus: 'IN' | 'OUT') => {
-  if (status === newStatus) return; // Prevent unnecessary updates
+    if (status !== newStatus) { 
+      setStatus(newStatus); 
+      await getLocation();   
+    }
+  };
 
-  setStatus(newStatus); // Update status immediately
-
-  setIsLoading(true); // Show loading indicator for location fetching
-
-  const locationData = await getLocation();
-
-  if (locationData) {
-    const { latitude, longitude, fullAddress } = locationData;
-
-    setLatitude(latitude.toString());
-    setLongitude(longitude.toString());
-    setAddress(fullAddress);
-
-    // Update attendance data
-    setAttendenceData((prevState) => ({
-      ...prevState,
-      latitude: latitude.toString(),
-      longitude: longitude.toString(),
-      address: fullAddress,
-    }));
-  }
-
-  setIsLoading(false); // Stop loading indicator
-};
 
   
 console.log('status',status)

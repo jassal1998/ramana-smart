@@ -57,7 +57,7 @@ console.log('leaddata',LeadData)
 //     dispatch(fetchData());
 //   }, [dispatch]);
 
-  // Sync Redux state to local state, with safety check
+  
   
 
 
@@ -134,12 +134,11 @@ console.log("Filtered Data:", filteredData);
 
   const handleSearchChange = (text: string) => {
     setSearchQuery(text);
-    setIsLoading(true); // Set loading to true when typing starts
-
-    // Simulate a delay (e.g., for API call or debounce)
+    setIsLoading(true); 
+   
     setTimeout(() => {
-      setIsLoading(false); // Set loading to false after a short delay
-    }, 500); // Adjust the delay to your preference
+      setIsLoading(false); 
+    }, 500);
   };
 
   const handleContractNumberChange = (id: string, value: string) => {
@@ -166,23 +165,23 @@ console.log("Filtered Data:", filteredData);
    const processedData = LeadData.data.map((item: any) => ({
       
       id: item.id.toString(),
-      name: item.retailerName || "Unknown Company", // Add a default value for retailerName
-      contractNumber: item.contactNo || "No Contact", // Add a default value for contactNo
-      followUpDate: item.followUpDate || "No Date", // Add a default value for followUpDate
-      leadPhase: item.leadPhase || "No Lead Phase", // Add a default value for leadPhase
-      retailerName: item.retailerName || "Unknown Company", // Ensure this is included
+      name: item.retailerName || "Unknown Company", 
+      contractNumber: item.contactNo || "No Contact",
+      followUpDate: item.followUpDate || "No Date", 
+      leadPhase: item.leadPhase || "No Lead Phase", 
+      retailerName: item.retailerName || "Unknown Company",
        longitude:item.longitude || "",
        latitude:item.latitude || "",
-      newImage: item.newImage || "", // Ensure this is included
-      outletAddress: item.outletAddress || "Unknown Address", // Ensure this is included
+      newImage: item.newImage || "", 
+      outletAddress: item.outletAddress || "Unknown Address", 
     }));
  
     setData(processedData);
     console.log("Data loaded:", processedData);
-    setIsLoading(false); // Data is loaded, stop loading indicator
+    setIsLoading(false); 
   } else {
     console.error("LeadData is not an array or is empty:", LeadData);
-    setIsLoading(false); // Stop loading even if the data is empty
+    setIsLoading(false); 
   }
 }, [LeadData])
 
@@ -194,7 +193,7 @@ console.log("Filtered Data:", filteredData);
     <TouchableOpacity
       onPress={() => {
         if (item) {
-          console.log("Navigating with item:", item); // Ensure item is valid before passing it
+          console.log("Navigating with item:", item); 
           navigation.navigate("Leaddetail", { item });
         } else {
           console.log("Item is undefined or not available!");
@@ -277,7 +276,7 @@ console.log("Filtered Data:", filteredData);
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={style.Follow}
+          style={style.button}
           onPress={() => {
             setShowAllData(false);
             setShowFollowUpCalls(true);
@@ -295,7 +294,7 @@ console.log("Filtered Data:", filteredData);
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={style.cold}
+          style={style.button}
           onPress={() => {
             setShowColdCalls(true);
             setShowFollowUpCalls(false);
@@ -402,36 +401,36 @@ marginHorizontal:10,
     shadowOpacity: 0.25,
     shadowRadius: 3.5,
   },
-  Follow: {
-    width: width * 0.3,
-    paddingVertical: 19,
-marginHorizontal:10,
-    marginVertical: 19,
-    backgroundColor: "rgb(30,129,176)",
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center",
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.5,
-  },
+//   Follow: {
+//     width: width * 0.3,
+//     paddingVertical: 19,
+// marginHorizontal:10,
+//     marginVertical: 19,
+//     backgroundColor: "rgb(30,129,176)",
+//     borderRadius: 8,
+//     alignItems: "center",
+//     justifyContent: "center",
+//     elevation: 3,
+//     shadowColor: "#000",
+//     shadowOffset: { width: 0, height: 2 },
+//     shadowOpacity: 0.25,
+//     shadowRadius: 3.5,
+//   },
 
-  cold: {
-    width: width * 0.3,
-    paddingVertical: 19,
-    marginVertical: 19,
-    backgroundColor: "rgb(30,129,176)",
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center",
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.5,
-  },
+  // cold: {
+  //   width: width * 0.3,
+  //   paddingVertical: 19,
+  //   marginVertical: 19,
+  //   backgroundColor: "rgb(30,129,176)",
+  //   borderRadius: 8,
+  //   alignItems: "center",
+  //   justifyContent: "center",
+  //   elevation: 3,
+  //   shadowColor: "#000",
+  //   shadowOffset: { width: 0, height: 2 },
+  //   shadowOpacity: 0.25,
+  //   shadowRadius: 3.5,
+  // },
 
   inputWrapper: {
     marginTop: 10,
