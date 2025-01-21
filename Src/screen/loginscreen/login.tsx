@@ -100,27 +100,33 @@ const handleSelectionChange = (event:any) => {
        
     }
   };
-useEffect(() => {
+  useEffect(() => {
     const checkToken = async () => {
       const token = await AsyncStorage.getItem("userToken");
 
       if (token) {
         console.log("Token found, navigating to LeadFollow screen.");
-        navigation.navigate("Mydrawer", { screen: "LeadFollow" });
+        navigation.replace("Mydrawer", { screen: "LeadFollow" });
       } else {
         console.log("No token found, staying on login screen.");
+        setIsLoading(false); // Token not found, stop loading
       }
-
-      setIsLoading(false); 
     };
 
     checkToken();
   }, [navigation]);
 
   if (isLoading) {
-    
-    return null; 
+    // Show loading indicator while checking token
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
   }
+
+ 
+
 
  
 

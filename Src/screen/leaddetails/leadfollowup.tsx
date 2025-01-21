@@ -18,51 +18,37 @@ import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 const { width, height } = Dimensions.get("window");
 
 interface LeadData {
- 
   name: any;
- contractNumber:any,
+  contractNumber: any;
   id: number;
   retailerName: string;
-  
+
   followUpDate: string;
   leadPhase: string;
   newImage: string;
   outletAddress: string;
-  longitude:string;
-  latitude:string
+  longitude: string;
+  latitude: string;
 }
 
-
 const LeadFollow = () => {
-  const dispatch:any = useDispatch();
+  const dispatch: any = useDispatch();
   const navigation: any = useNavigation();
   console.log(navigation);
-
-
-
-
 
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showColdCalls, setShowColdCalls] = useState<boolean>(false);
   const [showFollowUpCalls, setShowFollowUpCalls] = useState<boolean>(false);
   const [showAllData, setShowAllData] = useState(true);
- 
- 
-const LeadData= useSelector((state:any)=>state.Follow.Card || [])
 
-console.log('leaddata',LeadData)
+  const LeadData = useSelector((state: any) => state.Follow.Card || []);
 
-//  useEffect(() => {
-//     dispatch(fetchData());
-//   }, [dispatch]);
+  //  useEffect(() => {
+  //     dispatch(fetchData());
+  //   }, [dispatch]);
 
-  
-  
-
-
-
-
+  // Sync Redux state to local state, with safety check
 
   const [data, setData] = useState<LeadData[]>([
     {
@@ -72,11 +58,11 @@ console.log('leaddata',LeadData)
       leadPhase: "follow_up_call",
       id: 0,
       retailerName: "",
-     
+
       newImage: "",
       outletAddress: "",
-      longitude:"",
-      latitude:""
+      longitude: "",
+      latitude: "",
     },
     {
       name: "Pub Sohna",
@@ -85,11 +71,11 @@ console.log('leaddata',LeadData)
       leadPhase: "follow_up_call,cold_call",
       id: 0,
       retailerName: "",
-     
+
       newImage: "",
       outletAddress: "",
-      longitude:"",
-      latitude:""
+      longitude: "",
+      latitude: "",
     },
     {
       name: "Test",
@@ -98,19 +84,15 @@ console.log('leaddata',LeadData)
       leadPhase: "cold_call",
       id: 0,
       retailerName: "",
-     
+
       newImage: "",
       outletAddress: "",
-      longitude:"",
-      latitude:""
+      longitude: "",
+      latitude: "",
     },
   ]);
 
-
-
-
-
-  const filteredData = data.filter((item:any) => {
+  const filteredData = data.filter((item: any) => {
     const matchesSearchQuery =
       item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.contractNumber?.includes(searchQuery);
@@ -127,10 +109,6 @@ console.log('leaddata',LeadData)
 
     return matchesSearchQuery && matchesAll;
   });
-console.log("Filtered Data:", filteredData);
-
-
-
 
   const handleSearchChange = (text: string) => {
     setSearchQuery(text);
@@ -156,34 +134,32 @@ console.log("Filtered Data:", filteredData);
 
   useEffect(() => {
     dispatch(fetchData());
-  }, [dispatch]);
- 
+  }, []);
+
   useEffect(() => {
-    console.log('zxzxz',LeadData)
-  if (Array.isArray(LeadData?.data) && LeadData.data.length > 0) {
-  
-   const processedData = LeadData.data.map((item: any) => ({
-      
-      id: item.id.toString(),
-      name: item.retailerName || "Unknown Company", 
-      contractNumber: item.contactNo || "No Contact",
-      followUpDate: item.followUpDate || "No Date", 
-      leadPhase: item.leadPhase || "No Lead Phase", 
-      retailerName: item.retailerName || "Unknown Company",
-       longitude:item.longitude || "",
-       latitude:item.latitude || "",
-      newImage: item.newImage || "", 
-      outletAddress: item.outletAddress || "Unknown Address", 
-    }));
- 
-    setData(processedData);
-    console.log("Data loaded:", processedData);
-    setIsLoading(false); 
-  } else {
-    console.error("LeadData is not an array or is empty:", LeadData);
-    setIsLoading(false); 
-  }
-}, [LeadData])
+    console.log("zxzxz", LeadData);
+    if (Array.isArray(LeadData?.data) && LeadData.data.length > 0) {
+      const processedData = LeadData.data.map((item: any) => ({
+        id: item.id.toString(),
+        name: item.retailerName || "Unknown Company", // Add a default value for retailerName
+        contractNumber: item.contactNo || "No Contact", // Add a default value for contactNo
+        followUpDate: item.followUpDate || "No Date", // Add a default value for followUpDate
+        leadPhase: item.leadPhase || "No Lead Phase", // Add a default value for leadPhase
+        retailerName: item.retailerName || "Unknown Company", // Ensure this is included
+        longitude: item.longitude || "",
+        latitude: item.latitude || "",
+        newImage: item.newImage || "", // Ensure this is included
+        outletAddress: item.outletAddress || "Unknown Address", // Ensure this is included
+      }));
+
+      setData(processedData);
+      console.log("Data loaded:", processedData);
+      setIsLoading(false); // Data is loaded, stop loading indicator
+    } else {
+      console.error("LeadData is not an array or is empty:", LeadData);
+      setIsLoading(false); // Stop loading even if the data is empty
+    }
+  }, [LeadData]);
 
   const handleArrowClick = (item: LeadData) => {
     console.log("Clicked Item:", item);
@@ -212,7 +188,7 @@ console.log("Filtered Data:", filteredData);
         </View>
         <View style={style.row}>
           <Text style={style.label}>Contact Number:</Text>
-         <Text style={style.value}>{item.contractNumber || "No number"}</Text>
+          <Text style={style.value}>{item.contractNumber || "No number"}</Text>
         </View>
         <View style={style.row}>
           <Text style={style.label}>Date:</Text>
@@ -222,7 +198,6 @@ console.log("Filtered Data:", filteredData);
           <Text style={style.label}>Lead Phase:</Text>
           <Text style={style.value}>{item.leadPhase || "No Leadphase"}</Text>
         </View>
-        
       </View>
 
       <TouchableOpacity
@@ -232,9 +207,7 @@ console.log("Filtered Data:", filteredData);
     </TouchableOpacity>
   );
   return (
-    
-    
-      <View style={{flex:1,backgroundColor:'white',padding:10}}>
+    <View style={{ flex: 1, backgroundColor: "white", padding: 10 }}>
       <View style={style.follow}>
         {/* <Text style={style.lead}>Lead Followup</Text> */}
         {/* <TouchableOpacity
@@ -252,66 +225,67 @@ console.log("Filtered Data:", filteredData);
             Create Lead
           </Text>
         </TouchableOpacity> */}
-
       </View>
-      <ScrollView     style={{ flexGrow: 0, marginBottom: 10,}}
-        horizontal={true} >
-      <View style={style.all}>
-        <TouchableOpacity
-          style={style.button}
-          onPress={() => {
-            setShowAllData(true);
-            setShowFollowUpCalls(true);
-            setShowColdCalls(true);
-          }}
-        >
-          <Text
-            style={{
-              textAlign: "center",
-              color: "white",
-            fontSize:15
+      <ScrollView style={{ flexGrow: 0, marginBottom: 10 }} horizontal={true}>
+        <View style={style.all}>
+          <TouchableOpacity
+            style={style.button}
+            onPress={() => {
+              setShowAllData(true);
+              setShowFollowUpCalls(true);
+              setShowColdCalls(true);
             }}
-           allowFontScaling={false} >
-            All
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={style.button}
-          onPress={() => {
-            setShowAllData(false);
-            setShowFollowUpCalls(true);
-            setShowColdCalls(false);
-          }}
-        >
-          <Text
-            style={{
-              textAlign: "center",
-              color: "white",
-             fontSize:15
+          >
+            <Text
+              style={{
+                textAlign: "center",
+                color: "white",
+                fontSize: 15,
+              }}
+              allowFontScaling={false}
+            >
+              All
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={style.Follow}
+            onPress={() => {
+              setShowAllData(false);
+              setShowFollowUpCalls(true);
+              setShowColdCalls(false);
             }}
-          allowFontScaling={false} >
-            Follow Up Call
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={style.button}
-          onPress={() => {
-            setShowColdCalls(true);
-            setShowFollowUpCalls(false);
-            setShowAllData(false);
-          }}
-        >
-          <Text
-            style={{
-              textAlign: "center",
-              color: "white",
-              fontSize:15
+          >
+            <Text
+              style={{
+                textAlign: "center",
+                color: "white",
+                fontSize: 15,
+              }}
+              allowFontScaling={false}
+            >
+              Follow Up Call
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={style.Follow}
+            onPress={() => {
+              setShowColdCalls(true);
+              setShowFollowUpCalls(false);
+              setShowAllData(false);
             }}
-           allowFontScaling={false}>
-            Cold Call
-          </Text>
-        </TouchableOpacity>
-         {/* <TouchableOpacity
+          >
+            <Text
+              style={{
+                textAlign: "center",
+                color: "white",
+                fontSize: 15,
+              }}
+              allowFontScaling={false}
+            >
+              Cold Call
+            </Text>
+          </TouchableOpacity>
+          {/* <TouchableOpacity
           onPress={() => navigation.navigate("Leaddetail")}
           style={style.create}
         >
@@ -326,9 +300,8 @@ console.log("Filtered Data:", filteredData);
             Create Lead
           </Text>
         </TouchableOpacity> */}
-      </View>
-       </ScrollView>  
-
+        </View>
+      </ScrollView>
 
       <View style={style.inputWrapper}>
         <Image
@@ -341,7 +314,6 @@ console.log("Filtered Data:", filteredData);
           placeholder="Search here"
           style={style.input}
         />
-        
       </View>
 
       <View style={{ paddingTop: 10 }}>
@@ -374,22 +346,19 @@ const style = StyleSheet.create({
   follow: {
     paddingTop: 10,
     flexDirection: "row",
-    alignItems:'flex-end',
-    
+    alignItems: "flex-end",
   },
   lead: { textAlign: "center", fontSize: 20, top: 15, paddingLeft: 40 },
   all: {
-  
     flexDirection: "row",
     alignItems: "center",
-    justifyContent:'space-evenly',
-     width: '100%',
-   
+    justifyContent: "space-evenly",
+    width: "100%",
   },
   button: {
     width: width * 0.3,
     paddingVertical: 19,
-marginHorizontal:10,
+    marginHorizontal: 10,
     marginVertical: 19,
     backgroundColor: "rgb(30,129,176)",
     borderRadius: 8,
@@ -401,21 +370,21 @@ marginHorizontal:10,
     shadowOpacity: 0.25,
     shadowRadius: 3.5,
   },
-//   Follow: {
-//     width: width * 0.3,
-//     paddingVertical: 19,
-// marginHorizontal:10,
-//     marginVertical: 19,
-//     backgroundColor: "rgb(30,129,176)",
-//     borderRadius: 8,
-//     alignItems: "center",
-//     justifyContent: "center",
-//     elevation: 3,
-//     shadowColor: "#000",
-//     shadowOffset: { width: 0, height: 2 },
-//     shadowOpacity: 0.25,
-//     shadowRadius: 3.5,
-//   },
+  Follow: {
+    width: width * 0.3,
+    paddingVertical: 19,
+    marginHorizontal: 10,
+    marginVertical: 19,
+    backgroundColor: "rgb(30,129,176)",
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.5,
+  },
 
   // cold: {
   //   width: width * 0.3,
@@ -508,11 +477,11 @@ marginHorizontal:10,
     width: width * 0.3,
     paddingVertical: 19,
     marginVertical: 19,
-marginHorizontal:10,
+    marginHorizontal: 10,
     backgroundColor: "rgb(30,129,176)",
     borderRadius: 8,
     alignItems: "center",
-    
+
     elevation: 3,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },

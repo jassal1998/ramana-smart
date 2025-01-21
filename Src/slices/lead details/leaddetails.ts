@@ -46,7 +46,7 @@ export const postData = (fromData: any) => async (dispatch: any) => {
       throw new Error("Request data cannot be empty");
     }
 
-    console.log("Request Data being sent:", fromData);
+    console.log("Request uni being sent:", fromData);
 
    
     const savetoken = await AsyncStorage.getItem("userToken");
@@ -57,16 +57,8 @@ export const postData = (fromData: any) => async (dispatch: any) => {
    
     const formattedToken = `Bearer ${savetoken.replace(/^"|"$/g, "")}`;
     console.log("Formatted Token:", formattedToken);
-
-   
- 
-
-
-  
     const url = `${API_BASE_URl}/userprofile`;
     console.log("API URL:", url);
-
-   
     const response = await axios.post(
       url,
       fromData, 
@@ -75,10 +67,10 @@ export const postData = (fromData: any) => async (dispatch: any) => {
           Authorization: formattedToken,
           "Content-Type": "multipart/form-data",
         },
-        timeout: 15000, 
+       
       }
     );
-
+console.log(response, "Jaiiii")
    
     const data = response.data;
     console.log("Response Data:", data);

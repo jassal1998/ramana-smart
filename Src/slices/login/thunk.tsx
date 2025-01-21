@@ -16,10 +16,9 @@ export const requestLogin =
       );
 
       if (response?.data) {
-        const token =response.data.token
+        const token = response.data.token;
         if (token) {
-          await AsyncStorage.setItem("userToken", token); 
-          console.log("Token saved:", token); 
+          await AsyncStorage.setItem("userToken", token);
         } else {
           console.error("No token received in the response.");
         }
@@ -36,4 +35,3 @@ export const requestLogin =
       throw error; // Rethrow the error for further handling if needed
     }
   };
-  

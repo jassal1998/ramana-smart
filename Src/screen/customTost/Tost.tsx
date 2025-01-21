@@ -40,13 +40,13 @@ const CustomToast: React.FC<CustomToastProps> = ({ visible, message }) => {
 
 const styles = StyleSheet.create({
   container: {
-    width: "100%",  // Ensure the parent view takes up full width
+    width: "100%", 
     position: "absolute",
     bottom: 50,
-    alignItems: "center",  // Center the toast horizontally
+    alignItems: "center",  
   },
   toastContainer: {
-    width: 200,  // Adjust width to 90% of screen width
+    width: 200,  
     backgroundColor: "rgba(0, 0, 0, 0.8)",
     borderRadius: 10,
     paddingVertical: 15,
