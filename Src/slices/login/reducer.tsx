@@ -13,7 +13,6 @@ const account = createSlice({
   initialState,
   reducers: {
     apiError(state, action) {
-      console.log(action.payload, "ddd");
       state.error = action.payload;
       state.loading = true;
       state.errorMsg = true;

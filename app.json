@@ -2,7 +2,7 @@
   "expo": {
     "name": "ramana-smart",
     "slug": "ramana-smart",
-    "version": "1.0.0",
+    "version": "3.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -13,16 +13,32 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app requires access to the camera.",
+        "NSLocationWhenInUseUsageDescription": "This app requires access to your location."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
+        "backgroundColor": "#ffffff",
+        "permissions": [
+          "CAMERA",
+          "ACCESS_FINE_LOCATION"
+        ]
+      },
+      "package": "com.devguru93.ramanasmart",
+       "versionCode": 2
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "66a3baa3-e8a7-4352-bd91-01c9d1cab848"
+      }
+    },
+    "owner": "devguru93"
   }
 }

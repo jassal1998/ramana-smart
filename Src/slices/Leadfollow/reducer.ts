@@ -12,7 +12,6 @@ const Follow = createSlice({
   initialState,
   reducers: {
     apiError(state, action) {
-      console.log(action.payload, "aaa");
       state.error = action.payload;
       state.loading = true;
     },
@@ -25,8 +24,7 @@ const Follow = createSlice({
 
       // Store the relevant data only
       state.Card = cardData; // Store card data only (not the headers)
-      state.headers = { allowOrigin }; // Store only necessary headers (or omit this)
-      console.log(cardData, "gggg");
+      state.headers = { allowOrigin };
       state.loading = false;
     },
   },
