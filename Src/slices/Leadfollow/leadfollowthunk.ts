@@ -25,7 +25,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 //   }
 // };2
 
-export const fetchData = () => async (dispatch: any) => {
+export const fetchData = (id:any ) => async (dispatch: any) => {
   try {
     const savetoken = await AsyncStorage.getItem("userToken");
     if (!savetoken) {
@@ -33,14 +33,14 @@ export const fetchData = () => async (dispatch: any) => {
     }
     const newStr = savetoken?.replace(/^"|"$/g, "");
     const formattedToken = `Bearer ${newStr}`;
-    const url = `${API_BASE_URl}/leads/12`;
+    const url = `${API_BASE_URl}/leads/${id}`;
     const response = await axios.get(url, {
       headers: {
         Authorization: formattedToken,
       },
     });
-    const data = response.data; // Access the response data here
-    // Dispatch action for successful login
+    const data = response.data;
+   
     dispatch(Card(response.data));
     return response.data;
   } catch (error) {

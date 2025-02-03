@@ -73,7 +73,7 @@ export const postData = (fromData: any) => async (dispatch: any) => {
 console.log(response, "Jaiiii")
    
     const data = response.data;
-    console.log("Response Data:", data);
+    console.log("reducser:", data);
 
     dispatch(Data(data)); 
     return data; 

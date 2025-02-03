@@ -3,6 +3,8 @@ import {
   ActivityIndicator,
   Dimensions,
   Image,
+  Platform,
+  RefreshControl,
   StyleSheet,
   Text,
   TextInput,
@@ -15,6 +17,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import { fetchData } from "../../slices/thunk";
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import { jwtDecode } from "jwt-decode";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 const { width, height } = Dimensions.get("window");
 
 interface LeadData {
@@ -32,6 +37,23 @@ interface LeadData {
 }
 
 const LeadFollow = () => {
+  const [id, setId] = useState<string>("");
+  let decoded: any = null;
+  useEffect(() => {
+    const fetchToken = async () => {
+      try {
+        const saveToken: any = await AsyncStorage.getItem("userToken");
+        decoded = jwtDecode(saveToken);
+        setId(decoded.userid);
+
+        console.log(decoded, "bbbbbbb");
+      } catch (error) {
+        console.error("Error fetching token:", error);
+      }
+    };
+    fetchToken();
+    console.log("TokenDecoded :", decoded);
+  }, []);
   const dispatch: any = useDispatch();
   const navigation: any = useNavigation();
   console.log(navigation);
@@ -41,7 +63,7 @@ const LeadFollow = () => {
   const [showColdCalls, setShowColdCalls] = useState<boolean>(false);
   const [showFollowUpCalls, setShowFollowUpCalls] = useState<boolean>(false);
   const [showAllData, setShowAllData] = useState(true);
-
+const [isRefreshing, setIsRefreshing] = useState(false);
   const LeadData = useSelector((state: any) => state.Follow.Card || []);
 
   //  useEffect(() => {
@@ -119,6 +141,9 @@ const LeadFollow = () => {
     }, 500);
   };
 
+
+
+
   const handleContractNumberChange = (id: string, value: string) => {
     setData((prevData) =>
       prevData.map((item) =>
@@ -133,8 +158,20 @@ const LeadFollow = () => {
   //   };
 
   useEffect(() => {
-    dispatch(fetchData());
+    dispatch(fetchData(id));
   }, []);
+   
+
+
+const handleRefresh = async () => {
+  setIsRefreshing(true);
+  try {
+    await dispatch(fetchData(id));
+  } finally {
+    setIsRefreshing(false);
+  }
+};
+
 
   useEffect(() => {
     console.log("zxzxz", LeadData);
@@ -169,35 +206,59 @@ const LeadFollow = () => {
     <TouchableOpacity
       onPress={() => {
         if (item) {
-          console.log("Navigating with item:", item); 
+          console.log("Navigating with item:", item);
           navigation.navigate("Leaddetail", { item });
         } else {
           console.log("Item is undefined or not available!");
         }
       }}
     >
-      <View style={style.card}>
+      <View
+        style={style.card}
+       
+      >
         <View style={style.row}>
-          <Text style={style.label}>ID:</Text>
-          <Text style={style.value}>{item.id || "No ID"}</Text>
+          <Text allowFontScaling={false} style={style.label}>
+            ID:
+          </Text>
+          <Text allowFontScaling={false} style={style.value}>
+            {item.id || "No ID"}
+          </Text>
         </View>
         <View style={style.divider}></View>
         <View style={style.row}>
-          <Text style={style.label}>Name:</Text>
-          <Text style={style.value}>{item.retailerName || "No Name"}</Text>
+          <Text  allowFontScaling={false} style={style.label}>
+            Name:
+          </Text>
+          <Text allowFontScaling={false} style={style.value}>
+            {item.retailerName || "No Name"}
+          </Text>
         </View>
         <View style={style.row}>
-          <Text style={style.label}>Contact Number:</Text>
-          <Text style={style.value}>{item.contractNumber || "No number"}</Text>
+          <Text allowFontScaling={false} style={style.label}>
+            Contact Number:
+          </Text>
+          <Text allowFontScaling={false} style={style.value}>
+            {item.contractNumber || "No number"}
+          </Text>
         </View>
         <View style={style.row}>
-          <Text style={style.label}>Date:</Text>
-          <Text style={style.value}>{item.followUpDate || "No Date"}</Text>
+          <Text allowFontScaling={false} style={style.label}>
+            Date:
+          </Text>
+          <Text allowFontScaling={false} style={style.value}>
+            {item.followUpDate || "No Date"}
+          </Text>
         </View>
         <View style={style.row}>
-          <Text style={style.label}>Lead Phase:</Text>
-          <Text style={style.value}>{item.leadPhase || "No Leadphase"}</Text>
+          <Text allowFontScaling={false} style={style.label}>
+            Lead Phase:
+          </Text>
+          <Text allowFontScaling={false} style={style.value}>
+            {item.leadPhase || "No Leadphase"}
+          </Text>
         </View>
+        
       </View>
 
       <TouchableOpacity
@@ -309,6 +370,7 @@ const LeadFollow = () => {
           style={style.loupe}
         />
         <TextInput
+          allowFontScaling={false}
           value={searchQuery}
           onChangeText={handleSearchChange}
           placeholder="Search here"
@@ -317,7 +379,9 @@ const LeadFollow = () => {
       </View>
 
       <View style={{ paddingTop: 10 }}>
-        <Text style={style.items}>Items count: {filteredData.length}</Text>
+        <Text allowFontScaling={false} style={style.items}>
+          Items count: {filteredData.length}
+        </Text>
       </View>
 
       <View style={{ flex: 1 }}>
@@ -328,6 +392,14 @@ const LeadFollow = () => {
             data={filteredData}
             keyExtractor={(Item) => LeadData.id}
             renderItem={renderItem}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefreshing}
+                onRefresh={handleRefresh}
+                colors={["#2f5272"]} // Android refresh indicator color
+                tintColor="#2f5272" // iOS refresh indicator color
+              />
+            }
             contentContainerStyle={{ paddingVertical: 10 }}
           />
         ) : (
@@ -409,8 +481,8 @@ const style = StyleSheet.create({
     borderColor: "#ccc",
     alignSelf: "center",
     borderRadius: 10,
-    width: width * 0.9, // Width of the text input container
-    height: 50, // Height of the container
+    width: "100%",
+    height: 50,
   },
   input: {
     flex: 1,
@@ -422,10 +494,6 @@ const style = StyleSheet.create({
   loupe: { position: "absolute", left: 10, width: 20, height: 20 },
   items: { textAlign: "center", fontSize: 20, fontWeight: "400" },
 
-  number: {
-    fontSize: RFPercentage(2),
-    fontWeight: "bold",
-  },
   name: {
     fontSize: 14,
     color: "#333",
@@ -489,17 +557,18 @@ const style = StyleSheet.create({
     shadowRadius: 3.5,
   },
   card: {
-    width: width * 0.9,
+    width:'90%',
     alignSelf: "center",
     backgroundColor: "#fff", // White background for the card
     borderRadius: 10, // Rounded corners
-    height: height * 0.4,
+    flex: 1,
     marginVertical: 15, // Space between cards
     shadowColor: "#000", // Shadow color
     shadowOffset: { width: 0, height: 2 }, // Shadow offset
     shadowOpacity: 0.3, // Shadow opacity
     shadowRadius: 5, // Shadow blur radius
     elevation: 5,
+    minHeight: 100,
   },
   row: {
     padding: 12,
@@ -508,6 +577,7 @@ const style = StyleSheet.create({
     alignItems: "center",
     marginVertical: 5,
     paddingHorizontal: 10,
+    width: "100%",
   },
   label: {
     fontSize: 16,
@@ -515,6 +585,7 @@ const style = StyleSheet.create({
     fontWeight: "500",
     fontFamily: "Arial",
     letterSpacing: 0.5,
+
     marginBottom: 5,
     textTransform: "capitalize",
   },
@@ -523,11 +594,11 @@ const style = StyleSheet.create({
     fontSize: 16,
     color: "#333",
     fontWeight: "400",
-    fontFamily: "Roboto",
-    letterSpacing: 0.5,
     lineHeight: 24,
-
     textAlign: "left",
+    flexShrink: 1,
+    flexWrap: "wrap",
+    maxWidth: width > 600 ? "60%" : "70%",
   },
   divider: {
     width: width * 0.8,

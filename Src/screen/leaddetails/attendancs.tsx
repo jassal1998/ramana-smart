@@ -4,6 +4,7 @@ import {
   Alert,
   Dimensions,
   Image,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -21,7 +22,10 @@ import { postAttendance } from "../../slices/thunk";
 import CustomModal from "../modal/thankumodal";
 import { jwtDecode } from "jwt-decode";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as ImageManipulator from "expo-image-manipulator";
+import * as FileSystem from "expo-file-system";
 
+import { useNavigation, useRoute } from "@react-navigation/native";
 type AttendanceState = {
   id: string;
   status: string;
@@ -33,8 +37,14 @@ type AttendanceState = {
 
 const { width, height } = Dimensions.get("window");
 
-const Attendancs: React.FC = () => {
+const Attendance: React.FC = () => {
+  const route: any = useRoute();
+  const { reset} = route.params || {};
+    // const { factory, inLatitude, inlongitude, inPhotoUrl } = route.params || {}
+  // console.log("csdsdsd", route.params);
+  const navigation: any = useNavigation();
   let decoded: any = null;
+
   useEffect(() => {
     const fetchToken = async () => {
       try {
@@ -52,23 +62,73 @@ const Attendancs: React.FC = () => {
   const [longitude, setLongitude] = useState<string>("");
   const [id, Setid] = useState("");
   const [factoryName, setfactoryName] = useState("");
-  const [status, setStatus] = useState<"IN" | "OUT" | null>(null);
+  const [status, setStatus] = useState<"IN" | "OUT" | null>();
   const [address, setAddress] = useState<string>("");
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [imageUrl, setImageUrl] = useState([]);
   const [isModalVisible, setModalVisible] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmittedIn, setIsSubmittedIn] = useState(false);
+  const [isSubmittedOut, setIsSubmittedOut] = useState(false);
+   
   const [attendenceData, setAttendenceData] = useState({
     id: "",
     status: "",
-    latitude: "",
+    latitude:  "", 
     longitude: "",
     factoryName: "",
     photoUrl: "",
   });
 
+
+
+useEffect(() => {
+  console.log("Status:", status);
+
+  if (status === "OUT" && route.params) {
+    const { factoryName, inLatitude, inLongitude, inPhotoUrl } = route.params;
+    console.log("cvdgdd", route.params);
+
+    setAttendenceData((prevState) => ({
+      ...prevState,
+      factoryName: factoryName || "",
+      latitude: inLatitude || "",
+      longitude: inLongitude || "",
+      photoUrl: inPhotoUrl || "",
+    }));
+  } else {
+    console.log("No item in route.params or status is not OUT");
+  }
+}, [status, route.params]);
+
+
+
+
+
   const dispatch: any = useDispatch();
+
+  useEffect(() => {
+    if (reset) {
+      console.log("Resetting data...");
+
+      setLatitude("");
+      setLongitude("");
+      setImageUri(null);
+      setStatus(null);
+      setAddress("");
+      setIsSubmitted(false);
+      setIsSubmittedIn(false);
+      setIsSubmittedOut(false);
+
+       AsyncStorage.removeItem("attendanceStatus");
+    AsyncStorage.removeItem("factoryName");
+    AsyncStorage.removeItem("isSubmitted");
+    }
+    
+    console.log("States reset on navigating to Attendance.");
+  }, [reset]);
 
   useEffect(() => {
     (async () => {
@@ -77,20 +137,56 @@ const Attendancs: React.FC = () => {
     })();
   }, []);
 
-  const handleFile = (fileUri: string) => {
-    const formData = new FormData();
+  const compressImage = async (uri: string) => {
+    try {
+      // Remove 'file://' prefix for iOS
+      if (Platform.OS === "ios" && uri.startsWith("file://")) {
+        uri = uri.replace("file://", "");
+      }
 
-    // Option 1: Bypass strict typing
-    //    formData.append("newImage", {
-    //      uri: fileUri,
-    //      name: "uploaded_image.jpg",
-    //      type: "image/jpeg",
-    //    } as any);
+      // Compress and resize the image
+      const resizedImage = await ImageManipulator.manipulateAsync(
+        uri,
+        [{ resize: { width: 1200 } }], // Maintain aspect ratio, reduce width
+        { compress: 0.3, format: ImageManipulator.SaveFormat.JPEG } // Reduce quality to 30%
+      );
 
-    //    console.log("FormData entries:");
-    //  console.log("fgghhgfffff", formData);
+      // Log compressed file size
+      const fileInfo: any = await FileSystem.getInfoAsync(resizedImage.uri);
+      console.log(`Compressed Image Size: ${fileInfo.size} bytes`);
 
-    //  return formData;
+      // Ensure file size is below 5MB (5 * 1024 * 1024 bytes)
+      if (fileInfo.size > 4 * 1024 * 1024) {
+        throw new Error("Image is still too large after compression.");
+      }
+
+      return resizedImage.uri;
+    } catch (error) {
+      console.error("Error compressing image:", error);
+      throw error;
+    }
+  };
+
+  const handleFile = async (fileUri: string) => {
+    try {
+     
+      const compressedUri = await compressImage(fileUri);
+
+      
+      const formData = new FormData();
+      formData.append("newImage", {
+        uri: Platform.OS === "ios" ? compressedUri : compressedUri,
+        name: "uploaded_image.jpg",
+        type: "image/jpeg",
+      } as any);
+
+      console.log("Prepared FormData for upload:", formData);
+      return formData;
+    } catch (error) {
+      console.error("Error handling file:", error);
+      Alert.alert("Error", "Failed to prepare the image for upload.");
+      return null;
+    }
   };
 
   const openCamera = async () => {
@@ -115,10 +211,13 @@ const Attendancs: React.FC = () => {
       try {
         const formData = await handleFile(result.assets[0].uri);
 
-        //  console.log("FormData for Image Upload:", formData)
+        console.log("FormData for Image Upload:", formData);
 
         setImageUri(result.assets[0].uri);
-        setImageUrl(result.assets[0]);
+        console.log("gssss", result.assets[0]);
+        setImageUrl(result.assets[0]); // Set image preview
+        console.log("Image URI:", result.assets[0].uri);
+        console.log("result", result);
       } catch (error) {
         console.error("Error handling file:", error);
       }
@@ -128,12 +227,46 @@ const Attendancs: React.FC = () => {
     setImageUri(null);
   };
 
+  useEffect(() => {
+    const checkSavedStatus = async () => {
+      try {
+        const savedStatus: any = await AsyncStorage.getItem("attendanceStatus");
+        const savedFactoryName = await AsyncStorage.getItem("factoryName");
+        const isSubmitted = await AsyncStorage.getItem("isSubmitted");
+
+        if (savedStatus) {
+          setStatus(savedStatus);
+          if (savedStatus === "IN") {
+            setIsSubmittedIn(true);
+            setIsSubmittedOut(false);
+          } else if (savedStatus === "OUT") {
+            setIsSubmittedIn(false);
+            setIsSubmittedOut(true);
+          }
+        }
+        if (savedFactoryName) {
+          setfactoryName(savedFactoryName);
+        }
+
+        if (isSubmitted === "true") {
+          setIsSubmitted(true);
+        }
+
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error retrieving saved status:", error);
+        setIsLoading(false);
+      }
+    };
+
+    checkSavedStatus();
+  }, []);
   const getLocation = async () => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
         alert("Permission to access location was denied");
-        return null; // Return null if permission is denied
+        return null; 
       }
 
       const location = await Location.getCurrentPositionAsync({});
@@ -152,17 +285,46 @@ const Attendancs: React.FC = () => {
       return { latitude, longitude, fullAddress };
     } catch (error) {
       console.error("Error getting location or address:", error);
-      return null; // Return null in case of errors
+      return null;
     }
   };
 
   const handleStatusChange = async (newStatus: "IN" | "OUT") => {
-    if (status === newStatus) return; // Prevent unnecessary updates
+    if (status === newStatus) return;
 
-    setStatus(newStatus); // Update status immediately
+   if (newStatus === "IN" && isSubmittedIn) {
+     Alert.alert(
+       "Error",
+       "You have already submitted IN. Please submit OUT first."
+     );
+     return;
+   }
 
-    setIsLoading(true); // Show loading indicator for location fetching
+   if (newStatus === "OUT" && isSubmittedOut) {
+     Alert.alert(
+       "Error",
+       "You have already submitted OUT. Please submit IN first."
+     );
+     return;
+   }
+    setStatus(newStatus); 
 
+  await AsyncStorage.setItem("attendanceStatus", newStatus);
+  if (newStatus === "IN") {
+    setIsSubmittedIn(true); 
+    setIsSubmittedOut(false);
+  } else {
+    setIsSubmittedOut(true);
+    setIsSubmittedIn(false); 
+    
+  }
+
+  if (newStatus === "OUT") {
+    setIsSubmittedOut(true);
+  }
+
+
+    setIsLoading(true); 
     const locationData = await getLocation();
 
     if (locationData) {
@@ -180,16 +342,29 @@ const Attendancs: React.FC = () => {
         address: fullAddress,
       }));
     }
+    if (newStatus === "OUT" && factoryName) {
+      setfactoryName(factoryName);
 
-    setIsLoading(false); // Stop loading indicator
+    } else if (newStatus === "OUT") {
+     
+    }
+    
+    
+
+    setIsLoading(false); 
+    
   };
 
   const handlePress = async () => {
-    // Step 1: Prepare attendance data
+    
     console.log(imageUri, "imageUrlimageUrl");
 
     if (!status) {
       Alert.alert("Missing Field", "Please select a status: IN or OUT.");
+      return;
+    }
+    if (!imageUri) {
+      Alert.alert("latitude");
       return;
     }
     const newFormData = new FormData();
@@ -198,7 +373,7 @@ const Attendancs: React.FC = () => {
     newFormData.append("status", status);
     newFormData.append("latitude", attendenceData.latitude);
     newFormData.append("longitude", attendenceData.longitude);
-    newFormData.append("factoryName", factoryName);
+    newFormData.append("factoryName", attendenceData.factoryName);
     newFormData.append("photoUrl", {
       uri: imageUri,
       name: "uploaded_image.jpg",
@@ -217,7 +392,26 @@ const Attendancs: React.FC = () => {
       setTimeout(() => {
         setIsLoading(false);
       }, 4000);
+
+      await AsyncStorage.setItem("attendanceStatus", status);
+      await AsyncStorage.setItem("factoryName", factoryName);
+      await AsyncStorage.setItem("isSubmitted", "true");
+
       setModalVisible(true);
+      setIsSubmitted(true);
+
+      if (status === "IN") {
+        setIsSubmittedIn(true); // Mark IN as submitted
+        
+      } else if (status === "OUT") {
+      
+       setIsSubmittedOut(true);
+      }
+      setLatitude("");
+      setLongitude("");
+      setImageUri(null);
+
+      
 
       if (response?.success) {
       }
@@ -229,6 +423,15 @@ const Attendancs: React.FC = () => {
       alert("An error occurred while submitting attendance. Please try again.");
       setIsLoading(false);
     }
+  };
+
+  const handleModalClose = async () => {
+    setModalVisible(false);
+
+    const validStatus = status ?? "IN"; 
+    await AsyncStorage.setItem("status", validStatus);
+
+    navigation.navigate("AttendanceLead", { status: validStatus });
   };
 
   return (
@@ -251,8 +454,12 @@ const Attendancs: React.FC = () => {
             style={[
               style.button,
               status === "IN" && { backgroundColor: "rgb(30,129,176)" },
+              isSubmittedIn && { backgroundColor: "green" },
             ]}
             onPress={() => handleStatusChange("IN")}
+            disabled={
+              status === "IN" || status === "OUT" || isSubmittedIn || isLoading
+            }
           >
             <Text style={style.buttonText}>IN</Text>
             {isLoading && (
@@ -268,6 +475,7 @@ const Attendancs: React.FC = () => {
             style={[
               style.button,
               status === "OUT" && { backgroundColor: "rgb(30,129,176)" },
+              isSubmittedOut && { backgroundColor: "green" },
             ]}
             onPress={() => handleStatusChange("OUT")}
           >
@@ -284,11 +492,19 @@ const Attendancs: React.FC = () => {
       </View>
       <View style={{ flexDirection: "row", left: 20, paddingTop: 10 }}>
         <Text style={style.Latitude}>Latitude:</Text>
-        <TextInput value={latitude} style={style.num} editable={false} />
+        <TextInput
+          value={attendenceData.latitude}
+          style={style.num}
+          editable={false}
+        />
       </View>
       <View style={{ flexDirection: "row", left: 20 }}>
         <Text style={style.Latitude}>Longitude:</Text>
-        <TextInput value={longitude} style={style.num} editable={false} />
+        <TextInput
+          value={attendenceData.longitude}
+          style={style.num}
+          editable={false}
+        />
       </View>
       <View style={style.retailer}>
         <Text style={style.name}>Factory Name</Text>
@@ -296,8 +512,13 @@ const Attendancs: React.FC = () => {
       </View>
       <View style={{ paddingTop: 10, alignItems: "center" }}>
         <TextInput
-          value={factoryName}
-          onChangeText={setfactoryName}
+          value={attendenceData.factoryName || ""}
+          onChangeText={(text) => {
+            setAttendenceData((prevState) => ({
+              ...prevState,
+              factoryName: text,
+            }));
+          }}
           style={style.input2}
           placeholder="Enter Factory Name"
           placeholderTextColor="gray"
@@ -314,8 +535,11 @@ const Attendancs: React.FC = () => {
       </View>
       <View style={{ paddingTop: 10, alignItems: "center" }}>
         <View style={style.card}>
-          {imageUri ? (
-            <Image source={{ uri: imageUri }} style={style.image} />
+          {imageUri || attendenceData.photoUrl ? (
+            <Image
+              source={{ uri: imageUri || attendenceData.photoUrl }}
+              style={style.image}
+            />
           ) : (
             <Text style={style.placeholderText}>No image selected</Text>
           )}
@@ -340,10 +564,7 @@ const Attendancs: React.FC = () => {
             />
           )}
         </TouchableOpacity>
-        <CustomModal
-          isVisible={isModalVisible}
-          onClose={() => setModalVisible(false)}
-        />
+        <CustomModal isVisible={isModalVisible} onClose={handleModalClose} />
       </View>
     </KeyboardAwareScrollView>
   );
@@ -470,4 +691,4 @@ const style = StyleSheet.create({
   },
 });
 
-export default Attendancs;
+export default Attendance;

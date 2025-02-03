@@ -29,6 +29,7 @@ import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 import { jwtDecode } from "jwt-decode";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Location from "expo-location";
+
 interface ApiResponse {
   success: boolean;
   message: string;
@@ -57,7 +58,7 @@ const Leaddetail = () => {
       try {
         const saveToken: any = await AsyncStorage.getItem("userToken");
         decoded = jwtDecode(saveToken);
-        setId(decoded?.userid );
+        setId(decoded.userid );
         
         console.log(decoded, "bbbbbbb");
       } catch (error) {
@@ -306,7 +307,7 @@ console.log("formmmmm:", formData);
     alert("User ID is not available. Please try again later.");
     return;
   }
-    if (!(formData.retailerName || formData.mobile || address || imageUri)) {
+    if (!(id|| formData.retailerName || formData.mobile || address || imageUri)) {
       alert("Please fill all required fields and select an image!");
       return; 
     }
@@ -424,11 +425,12 @@ console.log("FormData after appending userid:", id);
         ></TextInput>
       </View> */}
       <View style={style.retailer}>
-        <Text style={style.name}>RETAILER NAME</Text>
-        <Text style={style.star}>***</Text>
+        <Text allowFontScaling={false} style={style.name}>RETAILER NAME</Text>
+        <Text allowFontScaling={false} style={style.star}>***</Text>
       </View>
       <View style={{ paddingTop: 10, alignItems: "center" }}>
         <TextInput
+        allowFontScaling={false}
           value={formData.retailerName}
           onChangeText={(text) =>
             setFormData({ ...formData, retailerName: text })
@@ -437,12 +439,13 @@ console.log("FormData after appending userid:", id);
         ></TextInput>
       </View>
       <View style={style.retailer}>
-        <Text style={style.name}>CONTACT NO</Text>
-        <Text style={style.star}>***</Text>
+        <Text allowFontScaling={false} style={style.name}>CONTACT NO</Text>
+        <Text allowFontScaling={false} style={style.star}>***</Text>
       </View>
 
       <View style={style.inputWrapper}>
         <TextInput
+        allowFontScaling={false}
           style={style.input}
           value={formData.mobile}
           placeholder="Enter contract number"
@@ -455,7 +458,7 @@ console.log("FormData after appending userid:", id);
       </View>
       {errorMessage ? (
        <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-  <Text style={{ 
+  <Text allowFontScaling={false} style={{ 
     color: "red", 
     textAlign: "center", 
    
@@ -477,28 +480,31 @@ console.log("FormData after appending userid:", id);
  </View> */}
 
       <View style={{ flexDirection: "row", left: 20, paddingTop: 10 }}>
-        <Text style={style.Latitude}>Latitude</Text>
+        <Text allowFontScaling={false} style={style.Latitude}>Latitude</Text>
         <TextInput
+        allowFontScaling={false}
           value={formData.latitudeNew}
           style={style.num}
           editable={false}
         />
       </View>
       <View style={{ flexDirection: "row", left: 20 }}>
-        <Text style={style.Latitude}>Longitude</Text>
+        <Text allowFontScaling={false} style={style.Latitude}>Longitude</Text>
         <TextInput
+        allowFontScaling={false}
           value={formData.longitudeNew}
           style={style.num}
           editable={false}
         />
       </View>
       <View style={style.retailer}>
-        <Text style={style.name}>OUTLET ADDRESS</Text>
-        <Text style={style.star}>***</Text>
+        <Text allowFontScaling={false} style={style.name}>OUTLET ADDRESS</Text>
+        <Text allowFontScaling={false} style={style.star}>***</Text>
       </View>
 
       <View style={{ paddingTop: 10, alignItems: "center" }}>
         <TextInput
+        allowFontScaling={false}
           value={address}
           style={style.input2}
           editable={true}
@@ -509,6 +515,7 @@ console.log("FormData after appending userid:", id);
       <View style={style.pick}>
         <TouchableOpacity onPress={getLocation} style={style.location}>
           <Text
+          allowFontScaling={false}
             style={{
               color: "white",
               textAlign: "center",
@@ -521,12 +528,12 @@ console.log("FormData after appending userid:", id);
         </TouchableOpacity>
       </View>
       <View style={style.retailer}>
-        <Text style={style.name}>LEAD PHASE</Text>
-        <Text style={style.star}>***</Text>
+        <Text allowFontScaling={false} style={style.name}>LEAD PHASE</Text>
+        <Text allowFontScaling={false} style={style.star}>***</Text>
       </View>
       <View style={{ paddingTop: 10, alignItems: "center" }}>
         <TouchableOpacity style={style.selector} onPress={togglePicker}>
-          <Text style={style.selectorText}>
+          <Text allowFontScaling={false} style={style.selectorText}>
             {selectedOption
               ? options.find((opt) => opt.value === selectedOption)?.label
               : "Select an option"}
@@ -542,21 +549,22 @@ console.log("FormData after appending userid:", id);
               style={style.option}
               onPress={() => handleOptionPress(option.value)}
             >
-              <Text style={style.optionText}>{option.label}</Text>
+              <Text allowFontScaling={false} style={style.optionText}>{option.label}</Text>
             </TouchableOpacity>
           ))}
         </Animated.View>
       </View>
       {selectedOption !== "not_interested" && (
         <View style={style.retailer}>
-          <Text style={style.name}>FOLLOW UP DATE</Text>
-          <Text style={style.star}>***</Text>
+          <Text allowFontScaling={false} style={style.name}>FOLLOW UP DATE</Text>
+          <Text allowFontScaling={false} style={style.star}>***</Text>
         </View>
       )}
       <View style={{ paddingTop: 10, alignItems: "center" }}>
         {selectedOption !== "not_interested" && (
           <View style={style.inputWrapper}>
             <TextInput
+            allowFontScaling={false}
               style={style.input}
               placeholder="Select a date"
               placeholderTextColor="gray"
@@ -594,15 +602,15 @@ console.log("FormData after appending userid:", id);
       </View>
 
       <View style={style.retailer}>
-        <Text style={style.name}>NEW IMAGE</Text>
-        <Text style={style.star}>***</Text>
+        <Text allowFontScaling={false} style={style.name}>NEW IMAGE</Text>
+        <Text allowFontScaling={false} style={style.star}>***</Text>
       </View>
       <View style={{ paddingTop: 10, alignItems: "center" }}>
         <View style={style.card}>
           {imageUri ? (
             <Image source={{ uri: imageUri }} style={style.image} />
           ) : (
-            <Text style={style.placeholderText}>No image selected</Text>
+            <Text allowFontScaling={false} style={style.placeholderText}>No image selected</Text>
           )}
 
           <TouchableOpacity style={style.cameraIcon} onPress={openCamera}>
@@ -621,7 +629,7 @@ console.log("FormData after appending userid:", id);
       </View>
       <View style={{ paddingTop: 20, paddingBottom: 20, alignItems: "center" }}>
         <TouchableOpacity onPress={handlePress} style={style.next}>
-          <Text style={{ color: "white" }}>Submit</Text>
+          <Text allowFontScaling={false} style={{ color: "white" }}>Submit</Text>
           {isLoading && (
             <ActivityIndicator
               size="large"
@@ -661,6 +669,7 @@ const style = StyleSheet.create({
 
   input: {
  padding:10,
+ 
    
     width: "100%",
     
@@ -712,7 +721,7 @@ const style = StyleSheet.create({
   },
   Latitude: { fontSize: 20 },
   num: { padding: 10, bottom: 5 },
-  iconLeft2: { width: 20, height: 20, right: 20 },
+  iconLeft2: { width: 20, height: 20, position:"relative",right:30,},
 
   next: {
     backgroundColor: "rgb(30,129,176)",

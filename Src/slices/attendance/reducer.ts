@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 export const initialState = {
-  Attendance:"",
+  Attendance:[],
   error:null, // for error message
   loading: false,
  
