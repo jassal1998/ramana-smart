@@ -30,7 +30,7 @@ export const requestLogin =
       }
     } catch (error: any) {
       // Dispatch an action for API error if using Redux
-      dispatch(apiError(error.message || "An error occurred"));
+      // dispatch(apiError(error.message || "An error occurred"));
       console.error("Login error:", error.message || error);
       throw error; // Rethrow the error for further handling if needed
     }

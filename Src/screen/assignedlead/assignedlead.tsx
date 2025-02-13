@@ -4,6 +4,7 @@ import { FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native
 import { jwtDecode } from "jwt-decode";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAssigned } from "../../slices/thunk";
+import Modalpicker from "../modal/modal";
 
 
 
@@ -25,15 +26,17 @@ const leadsData = [
 
 
 const Assignedlead=()=>{
-
+  const [modalVisible, setModalVisible] = useState(false);
  const [id, setId] = useState<string>("");
  let decoded: any = null;
+
+
  useEffect(() => {
    const fetchToken = async () => {
      try {
        const saveToken: any = await AsyncStorage.getItem("userToken");
        decoded = jwtDecode(saveToken);
-       setId(decoded.userid);
+       setId(decoded.employeeId);
 
        console.log(decoded, "smarty");
      } catch (error) {
@@ -49,6 +52,20 @@ const dispatch: any = useDispatch();
 const Data = useSelector((state: any) => state.Assign?.assignData || []);
 console.log("hgfjk",Data)
 
+
+
+const handleModalOpen = () => {
+  setModalVisible(true); // Open the modal
+};
+
+const handleModalClose = () => {
+  setModalVisible(false); // Close the modal
+};
+ useEffect(() => {
+   dispatch(fetchAssigned(id));
+ }, [dispatch, id]);
+
+
 const LeadCard = ({ lead }: { lead: any }) => {
   return (
     <View style={style.card}>
@@ -56,7 +73,7 @@ const LeadCard = ({ lead }: { lead: any }) => {
         <Text style={style.title}>ID: </Text>
         <Text style={style.title}>{lead.id}</Text>
       </View>
-       <View style={style.divider}></View>
+      <View style={style.divider}></View>
       <View style={style.row}>
         <Text style={style.title}>Name: </Text>
         <Text style={style.title}>{lead.leadName}</Text>
@@ -86,9 +103,10 @@ const LeadCard = ({ lead }: { lead: any }) => {
         <Text style={[style.text]}> {lead.status}</Text>
       </View>
       <View style={style.container2}>
-        <TouchableOpacity style={style.button}>
+        <TouchableOpacity style={style.button} onPress={handleModalOpen}>
           <Text style={style.buttonText}>Update</Text>
         </TouchableOpacity>
+        <Modalpicker isVisible={modalVisible} onClose={handleModalClose} />
       </View>
     </View>
   );
@@ -99,23 +117,25 @@ const LeadCard = ({ lead }: { lead: any }) => {
 
 
 
- useEffect(() => {
-   dispatch(fetchAssigned(id)); 
- }, [dispatch, id]);
 
 
 
 
     return (
       <View style={style.container}>
-        {/* Conditional Rendering of FlatList or empty message */}
+        {/* <View style={style.container2}>
+          <TouchableOpacity style={style.button}>
+            <Text style={style.buttonText}>Update</Text>
+          </TouchableOpacity>
+        </View> */}
+        
         <FlatList
-          data={Object.values(Data)} // Convert the object to an array using Object.values()
-          keyExtractor={(item:any ) => item.id.toString()} // Ensure unique keys
+          data={Object.values(Data)}
+          keyExtractor={(item: any) => item.id.toString()}
           renderItem={({ item }) => <LeadCard lead={item} />}
           contentContainerStyle={{ paddingBottom: 20 }}
           ListEmptyComponent={
-            <Text style={style.emptyText}>No leads available</Text> // Display when no data is available
+            <Text style={style.emptyText}>No leads available</Text>
           }
         />
       </View>
@@ -126,7 +146,7 @@ const LeadCard = ({ lead }: { lead: any }) => {
 const style = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F4F4F4",
+    backgroundColor: "#fff",
     padding: 10,
   },
   card: {

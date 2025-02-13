@@ -15,7 +15,8 @@ export const fetchAssigned = (id:any) => async (dispatch: any) => {
     }
     const newStr = savetoken?.replace(/^"|"$/g, "");
     const formattedToken = `Bearer ${newStr}`;
-    const url = `${API_BASE_URl}/getassignedleads/55`;
+    console.log("Sdsdsd",formattedToken)
+    const url = `${API_BASE_URl}/getassignedleads/${id}`
     const response = await axios.get(url, {
       headers: {
         Authorization: formattedToken,

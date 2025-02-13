@@ -15,21 +15,24 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSCameraUsageDescription": "This app requires access to the camera.",
-        "NSLocationWhenInUseUsageDescription": "This app requires access to your location."
+       "NSLocationWhenInUseUsageDescription": "This app requires access to your location to track your movement.",
+        "NSLocationAlwaysUsageDescription": "We need background location access to update your location even when the app is closed.",
+        "UIBackgroundModes": ["location"]
       }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff",
-        "permissions": [
-          "CAMERA",
-          "ACCESS_FINE_LOCATION"
-        ]
+        "backgroundColor": "#ffffff"
       },
+      "permissions": [
+        "CAMERA",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION"
+      ],
       "package": "com.devguru93.ramanasmart",
-       "versionCode": 2
+      "versionCode": 2
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -39,6 +42,15 @@
         "projectId": "66a3baa3-e8a7-4352-bd91-01c9d1cab848"
       }
     },
-    "owner": "devguru93"
+    "owner": "devguru93",
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "This app needs access to your location at all times to track your movements in the background.",
+          "locationAlwaysPermission": "Allow this app to access your location even when the app is closed."
+        }
+      ]
+    ]
   }
 }

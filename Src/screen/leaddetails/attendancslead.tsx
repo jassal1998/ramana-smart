@@ -1,6 +1,6 @@
 import { useNavigation, useRoute } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
-import { FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { FlatList, Platform, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAttendanceData } from "../../slices/thunk";
 import { jwtDecode } from "jwt-decode";
@@ -91,13 +91,10 @@ useEffect(() => {
     const storedStatus:any  = await AsyncStorage.getItem("status");
     setStatus(storedStatus); // Update the local state
   };
-
-
-
   getStatusFromStorage();
 }, []);
  useEffect(() => {
-  
+  console.log("Current Status:", status);
    navigation.setOptions({
      headerRight: () => {
        if (status === "OUT") {
@@ -107,7 +104,7 @@ useEffect(() => {
              onPress={() =>
                navigation.navigate("Attendance", {
                  reset: true,
-               key:Date.now().toString()
+                 key: Date.now().toString(),
                })
              }
            >
@@ -129,6 +126,8 @@ useEffect(() => {
           inLongitude: item.inLongitude,
           inLatitude: item.inLongitude,
           inPhotoUrl: item.inPhotoUrl,
+          status: "OUT",
+          highlightOutButton: true,
         })
       }
     >

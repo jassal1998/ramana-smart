@@ -325,6 +325,8 @@ console.log("formmmmm:", formData);
         return;
       }
       setIsLoading(true);
+       const compressedUri = await compressImage(imageUri); 
+
       const newFormData = new FormData();
       newFormData.append("retailerName", formData.retailerName);
       newFormData.append("mobile", formData.mobile);
@@ -338,7 +340,7 @@ console.log("formmmmm:", formData);
  console.log("Form Data Submitted:", newFormData)
       // Append the image
       newFormData.append("newImage", {
-        uri: imageUri,
+        uri: compressedUri,
         name: "uploaded_image.jpg",
         type: "image/jpeg",
       } as any);

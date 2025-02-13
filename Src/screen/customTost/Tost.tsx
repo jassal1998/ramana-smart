@@ -4,9 +4,14 @@ import { View, Text, StyleSheet, Animated } from "react-native";
 interface CustomToastProps {
   visible: boolean;
   message: string;
+  duration: any;
 }
 
-const CustomToast: React.FC<CustomToastProps> = ({ visible, message }) => {
+const CustomToast: React.FC<CustomToastProps> = ({
+  visible,
+  message,
+  duration = 5000,
+}) => {
   const [fadeAnim] = useState(new Animated.Value(0));
 
   useEffect(() => {
@@ -32,7 +37,9 @@ const CustomToast: React.FC<CustomToastProps> = ({ visible, message }) => {
   return (
     <View style={styles.container}>
       <Animated.View style={[styles.toastContainer, { opacity: fadeAnim }]}>
-        <Text style={styles.toastText} numberOfLines={1}>{message}</Text>
+        <Text style={styles.toastText} numberOfLines={1}>
+          {message}
+        </Text>
       </Animated.View>
     </View>
   );

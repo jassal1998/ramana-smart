@@ -72,7 +72,7 @@ const Attendance: React.FC = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmittedIn, setIsSubmittedIn] = useState(false);
   const [isSubmittedOut, setIsSubmittedOut] = useState(false);
-   
+   const [buttonStatus, setButtonStatus] = useState("IN")
   const [attendenceData, setAttendenceData] = useState({
     id: "",
     status: "",
@@ -88,7 +88,8 @@ useEffect(() => {
   console.log("Status:", status);
 
   if (status === "OUT" && route.params) {
-    const { factoryName, inLatitude, inLongitude, inPhotoUrl } = route.params;
+    const { factoryName, inLatitude, inLongitude, inPhotoUrl, status } =
+      route.params;
     console.log("cvdgdd", route.params);
 
     setAttendenceData((prevState) => ({
@@ -102,8 +103,11 @@ useEffect(() => {
     console.log("No item in route.params or status is not OUT");
   }
 }, [status, route.params]);
-
-
+ useEffect(() => {
+   if (status === "OUT") {
+     setButtonStatus("OUT"); 
+   }
+ }, [status]);
 
 
 
@@ -137,45 +141,92 @@ useEffect(() => {
     })();
   }, []);
 
-  const compressImage = async (uri: string) => {
-    try {
-      // Remove 'file://' prefix for iOS
-      if (Platform.OS === "ios" && uri.startsWith("file://")) {
-        uri = uri.replace("file://", "");
-      }
 
-      // Compress and resize the image
-      const resizedImage = await ImageManipulator.manipulateAsync(
-        uri,
-        [{ resize: { width: 1200 } }], // Maintain aspect ratio, reduce width
-        { compress: 0.3, format: ImageManipulator.SaveFormat.JPEG } // Reduce quality to 30%
+
+const compressImage = async (uri: string, targetSizeMB: number = 4) => {
+  try {
+   
+    let fileInfo: any = await FileSystem.getInfoAsync(uri);
+    let originalSizeMB = fileInfo.size / (1024 * 1024);
+    console.log("Original Image Size:", originalSizeMB.toFixed(2), "MB");
+
+   
+    let resizedImage: any = await ImageManipulator.manipulateAsync(
+      uri,
+      [{ resize: { width: 800 } }],
+      { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG } 
+    );
+
+    
+    fileInfo = await FileSystem.getInfoAsync(resizedImage.uri);
+    let compressedSizeMB = fileInfo.size / (1024 * 1024);
+    console.log(
+      "Compressed Image Size after first compression:",
+      compressedSizeMB.toFixed(2),
+      "MB"
+    );
+
+    
+    let compressionRatio = 0.5; 
+    while (compressedSizeMB > targetSizeMB && compressionRatio > 0.3) {
+      console.log("Image is still too large, compressing again...");
+      compressionRatio -= 0.1; 
+
+     
+      resizedImage = await ImageManipulator.manipulateAsync(
+        resizedImage.uri,
+        [],
+        {
+          compress: compressionRatio,
+          format: ImageManipulator.SaveFormat.JPEG,
+        }
       );
 
-      // Log compressed file size
-      const fileInfo: any = await FileSystem.getInfoAsync(resizedImage.uri);
-      console.log(`Compressed Image Size: ${fileInfo.size} bytes`);
+    
+      fileInfo = await FileSystem.getInfoAsync(resizedImage.uri);
+      compressedSizeMB = fileInfo.size / (1024 * 1024);
+      console.log(
+        "Compressed Image Size after further compression:",
+        compressedSizeMB.toFixed(2),
+        "MB"
+      );
 
-      // Ensure file size is below 5MB (5 * 1024 * 1024 bytes)
-      if (fileInfo.size > 4 * 1024 * 1024) {
-        throw new Error("Image is still too large after compression.");
+      if (compressedSizeMB <= targetSizeMB) {
+        console.log("Final Image Size:", compressedSizeMB.toFixed(2), "MB");
+        return resizedImage.uri; 
       }
-
-      return resizedImage.uri;
-    } catch (error) {
-      console.error("Error compressing image:", error);
-      throw error;
     }
-  };
+
+    
+    console.log("Final Compressed Image URI:", resizedImage.uri);
+    return resizedImage.uri;
+  } catch (error) {
+    console.error("Error compressing image:", error);
+    throw error;
+  }
+};
+
 
   const handleFile = async (fileUri: string) => {
+     const formData = new FormData();
     try {
-     
+      const fileInfo:any = await FileSystem.getInfoAsync(fileUri);
+      const originalSizeMB = fileInfo.size / (1024 * 1024); // Convert to MB
+      console.log("ffffff", originalSizeMB.toFixed(2), "MB");
+
+      // Compress the image before uploading
       const compressedUri = await compressImage(fileUri);
+      console.log("Compressed Image URI:", compressedUri);
+
+      // Get the size of the compressed file
+      const compressedFileInfo:any = await FileSystem.getInfoAsync(compressedUri);
+      const compressedSizeMB = compressedFileInfo.size / (1024 * 1024); // Convert to MB
+      console.log("sdsdsd", compressedSizeMB.toFixed(2), "MB");
 
       
       const formData = new FormData();
       formData.append("newImage", {
-        uri: Platform.OS === "ios" ? compressedUri : compressedUri,
+        uri: compressedUri,
         name: "uploaded_image.jpg",
         type: "image/jpeg",
       } as any);
@@ -355,75 +406,76 @@ useEffect(() => {
     
   };
 
-  const handlePress = async () => {
-    
-    console.log(imageUri, "imageUrlimageUrl");
+ const handlePress = async () => {
+   console.log(imageUri, "imageUrlimageUrl");
 
-    if (!status) {
-      Alert.alert("Missing Field", "Please select a status: IN or OUT.");
-      return;
-    }
-    if (!imageUri) {
-      Alert.alert("latitude");
-      return;
-    }
-    const newFormData = new FormData();
+   if (!status) {
+     Alert.alert("Missing Field", "Please select a status: IN or OUT.");
+     return;
+   }
+   if (!imageUri) {
+     Alert.alert("Please select an image.");
+     return;
+   }
 
-    newFormData.append("id", id);
-    newFormData.append("status", status);
-    newFormData.append("latitude", attendenceData.latitude);
-    newFormData.append("longitude", attendenceData.longitude);
-    newFormData.append("factoryName", attendenceData.factoryName);
-    newFormData.append("photoUrl", {
-      uri: imageUri,
-      name: "uploaded_image.jpg",
-      type: "image/jpeg",
-    } as any);
+   const newFormData = new FormData();
 
-    // console.log("Form Data Submitted (photoUrl):", formData);
+   newFormData.append("id", id);
+   newFormData.append("status", status);
+   newFormData.append("latitude", attendenceData.latitude);
+   newFormData.append("longitude", attendenceData.longitude);
+   newFormData.append("factoryName", attendenceData.factoryName);
 
-    setIsLoading(true);
+   try {
+     // Get the FormData for the compressed image from the handleFile function
+     const compressedFormData:any = await handleFile(imageUri);
 
-    try {
-      console.log("Sending request...");
+     if (compressedFormData) {
+       // Append the compressed image FormData to the main form data
+       newFormData.append("photoUrl", compressedFormData.get("newImage"));
+     } else {
+       Alert.alert("Error", "Failed to compress the image.");
+       return;
+     }
 
-      const response = await dispatch(postAttendance(newFormData));
+     setIsLoading(true);
 
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 4000);
+     console.log("Sending request...");
+     const response = await dispatch(postAttendance(newFormData));
 
-      await AsyncStorage.setItem("attendanceStatus", status);
-      await AsyncStorage.setItem("factoryName", factoryName);
-      await AsyncStorage.setItem("isSubmitted", "true");
+     setTimeout(() => {
+       setIsLoading(false);
+     }, 4000);
 
-      setModalVisible(true);
-      setIsSubmitted(true);
+     await AsyncStorage.setItem("attendanceStatus", status);
+     await AsyncStorage.setItem("factoryName", factoryName);
+     await AsyncStorage.setItem("isSubmitted", "true");
 
-      if (status === "IN") {
-        setIsSubmittedIn(true); // Mark IN as submitted
-        
-      } else if (status === "OUT") {
-      
+     setModalVisible(true);
+     setIsSubmitted(true);
+
+     if (status === "IN") {
+       setIsSubmittedIn(true);
+     } else if (status === "OUT") {
        setIsSubmittedOut(true);
-      }
-      setLatitude("");
-      setLongitude("");
-      setImageUri(null);
+     }
 
-      
+     setLatitude("");
+     setLongitude("");
+     setImageUri(null);
 
-      if (response?.success) {
-      }
-    } catch (error: any) {
-      console.error("Error submitting attendance:", error);
-      if (error.response) {
-        console.log("Backend error response:", error.response.data);
-      }
-      alert("An error occurred while submitting attendance. Please try again.");
-      setIsLoading(false);
-    }
-  };
+     if (response?.success) {
+       // Handle success logic here
+     }
+   } catch (error: any) {
+     console.error("Error submitting attendance:", error);
+     if (error.response) {
+       console.log("Backend error response:", error.response.data);
+     }
+     alert("An error occurred while submitting attendance. Please try again.");
+     setIsLoading(false);
+   }
+ };
 
   const handleModalClose = async () => {
     setModalVisible(false);
@@ -439,6 +491,7 @@ useEffect(() => {
       style={{ flex: 1, backgroundColor: "white", padding: 10 }}
       contentContainerStyle={{ paddingBottom: 20 }}
       enableOnAndroid
+      scrollEnabled={true}
       extraHeight={100}
       keyboardShouldPersistTaps="handled"
     >
@@ -475,7 +528,7 @@ useEffect(() => {
             style={[
               style.button,
               status === "OUT" && { backgroundColor: "rgb(30,129,176)" },
-              isSubmittedOut && { backgroundColor: "green" },
+              isSubmittedOut && { backgroundColor: "red" },
             ]}
             onPress={() => handleStatusChange("OUT")}
           >

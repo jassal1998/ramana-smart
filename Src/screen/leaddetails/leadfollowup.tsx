@@ -70,7 +70,44 @@ const [isRefreshing, setIsRefreshing] = useState(false);
   //     dispatch(fetchData());
   //   }, [dispatch]);
 
-  // Sync Redux state to local state, with safety check
+
+
+
+const checkAuth = async () => {
+  try {
+    const savedToken: any = await AsyncStorage.getItem("userToken");
+
+    if (!savedToken) {
+      console.log("No token found, logging out");
+      await AsyncStorage.removeItem("userToken");
+      navigation.navigate("Login");
+      return;
+    }
+
+    // Decode the token
+    const decodedToken: any = jwtDecode(savedToken);
+    const currentTime = Math.floor(Date.now() / 1000); // Get current time in seconds
+
+    if (decodedToken.exp && decodedToken.exp < currentTime) {
+      console.log("Token expired, logging out");
+      await AsyncStorage.removeItem("userToken");
+      navigation.navigate("Login");
+    }
+  } catch (error) {
+    console.error("Error fetching or decoding token:", error);
+  }
+};
+
+useEffect(() => {
+  checkAuth();
+}, []);
+if (isLoading) {
+  return (
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <ActivityIndicator size="large" color="#0000ff" />
+    </View>
+  );
+}
 
   const [data, setData] = useState<LeadData[]>([
     {
@@ -157,9 +194,12 @@ const [isRefreshing, setIsRefreshing] = useState(false);
   //     navigation.navigate("Leaddetail",{contractDetail:item});
   //   };
 
-  useEffect(() => {
-    dispatch(fetchData(id));
-  }, []);
+ useEffect(() => {
+   if (id) {
+    
+     dispatch(fetchData(id));
+   }
+ }, [id, dispatch]);
    
 
 
@@ -171,6 +211,7 @@ const handleRefresh = async () => {
     setIsRefreshing(false);
   }
 };
+
 
 
   useEffect(() => {
@@ -390,7 +431,7 @@ const handleRefresh = async () => {
         ) : filteredData && filteredData.length > 0 ? (
           <FlatList
             data={filteredData}
-            keyExtractor={(Item) => LeadData.id}
+            keyExtractor={(item) => item.id.toString()}
             renderItem={renderItem}
             refreshControl={
               <RefreshControl

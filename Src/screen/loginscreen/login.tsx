@@ -20,6 +20,7 @@ import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 import { useDispatch, useSelector } from "react-redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CustomToast from "../customTost/Tost";
+import { Ionicons } from "@expo/vector-icons";
 
 const { width, height } = Dimensions.get("window");
 
@@ -35,17 +36,21 @@ const Login = () => {
    const [toastVisible, setToastVisible] = useState(false);
      const [toastMessage, setToastMessage] = useState("");
   const navigation: any = useNavigation();
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
-const handleSelectionChange = (event:any) => {
+
+  const handleSelectionChange = (event:any) => {
     const { selection } = event.nativeEvent;
 
-    // Check if the user has selected all the text
+   
     if (selection.start === 0 && selection.end === email.length) {
       setIsAllSelected(true);
     } else {
       setIsAllSelected(false);
     }
   };
+
+  
 
 
   const validateEmail = (email: string) => {
@@ -54,7 +59,6 @@ const handleSelectionChange = (event:any) => {
   };
 
   const handleLogin = async () => {
-    // Validate inputs
     if (!email || !password) {
       return setErrorMessage("Please enter both email and password.");
     }
@@ -63,66 +67,74 @@ const handleSelectionChange = (event:any) => {
       return setErrorMessage("Please enter a valid email.");
     }
 
-    // Clear previous errors and set loading state
     setErrorMessage("");
-    setLoading(true);
-    try {    // Attempt login
-   const response = await dispatch(requestLogin(email, password, navigation));
-
-
-   
- const savetoken= await AsyncStorage.getItem("userToken")
- 
- if(savetoken){
-   console.log("Retrieved token from AsyncStorage:", savetoken);
-   console.log("token",savetoken)
-    } else {
-      console.error("Failed to retrieve token from AsyncStorage.");
-      setErrorMessage("Failed to save or retrieve token.");
-    }
- 
-
-
-
+    setLoading(true);  
+     
+    try {
+      const response = await dispatch(
+        requestLogin(email, password, navigation)
+        
+      );
+      
+      const savetoken = await AsyncStorage.getItem("userToken");
+       
+     
+      if (savetoken) {
+         
+        setTimeout(() => {
+          navigation.navigate("Mydrawer", { screen: "LeadFollow" });
+        }, 1000);
+         
+      } else {
+        console.error("Failed to retrieve token from AsyncStorage.");
+        setErrorMessage("Failed to save or retrieve token.");
+        
+      }
     } catch (error: any) {
      
-      const errorMsg = error.message?.includes("Wrong password")
-        ? "Incorrect password. Please try again."
-        : error.message?.includes("email not found")
-        ? "Email not found. Please check the entered email."
-        : error.message || "Something went wrong. Please try again.";
-
-      setErrorMessage(errorMsg);
+      if (error) {
+        setErrorMessage("Incorrect password. Please try again.");
+      } else if (error.message?.includes("email not found")) {
+        setErrorMessage("Email not found. Please check the entered email.");
+      } else {
+       
+      }
     } finally {
   
-      setErrorMessage(errorApi);
       setLoading(false);
-       
+    
     }
   };
+
  useEffect(() => {
-    const checkToken = async () => {
-      try {
-        const token = await AsyncStorage.getItem("userToken");
+   const checkToken = async () => {
+     setIsLoading(true); // Ensure loading state is set
+     try {
+       const token = await AsyncStorage.getItem("userToken");
+       console.log("Retrieved token:", token);
 
-        if (token) {
-          console.log("Token found, navigating to LeadFollow screen.");
-          navigation.navigate("Mydrawer", { screen: "LeadFollow" });
-        } else {
-          console.log("No token found, staying on login screen.");
-        }
-      } catch (error) {
-        console.error("Error checking token:", error);
-      } finally {
-        setIsLoading(false); // Stop loading once token check is complete
-      }
-    };
+       if (token) {
+         console.log("Token found, navigating to LeadFollow screen.");
+         navigation.reset({
+           index: 0,
+           routes: [{ name: "Mydrawer", params: { screen: "LeadFollow" } }],
+         });
+       } else {
+         console.log("No token found, staying on login screen.");
+         navigation.navigate("Login")
+       }
+     } catch (error) {
+       console.error("Error checking token:", error);
+     } finally {
+       setIsLoading(false); // Stop loading once check is complete
+     }
+   };
 
-    checkToken();
-  }, [navigation]);
+   checkToken();
+ }, []);
 
   if (isLoading) {
-    // Display loading spinner while checking token
+  
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" color="#0000ff" />
@@ -164,21 +176,32 @@ const handleSelectionChange = (event:any) => {
             onChangeText={setEmail}
             style={style.placeholder}
             selectionColor="silver"
-          
-             
-                allowFontScaling={false}
+            allowFontScaling={false}
           ></TextInput>
+
           <View style={{ paddingTop: 10 }}>
             <TextInput
               placeholder="Enter your Password"
               placeholderTextColor="silver"
               value={password}
               onChangeText={setPassword}
-              style={style.placeholder }
-              secureTextEntry={true}
+              style={style.placeholder}
+              secureTextEntry={!isPasswordVisible}
               selectionColor="white"
-                  allowFontScaling={false}
+              allowFontScaling={false}
             ></TextInput>
+            <TouchableOpacity
+              onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+            >
+              <Ionicons name="eye" size={20} color="white" style={style.icon} />
+            </TouchableOpacity>
+            {errorMessage ? (
+              <Text
+                style={{ color: "#fff", textAlign: "center", marginTop: 10 }}
+              >
+                {errorMessage}
+              </Text>
+            ) : null}
           </View>
           <View style={{ paddingTop: 5 }}>
             <TouchableOpacity onPress={() => navigation.navigate("Forget")}>
@@ -191,13 +214,17 @@ const handleSelectionChange = (event:any) => {
             onPress={handleLogin}
             style={[style.button, loading && { backgroundColor: "gray" }]}
           >
+            <CustomToast
+              visible={toastVisible}
+              message={toastMessage}
+              duration={15000}
+            />
             {loading ? (
               <ActivityIndicator size="small" color="#000" />
             ) : (
               <Text style={style.login}>Login</Text>
             )}
           </TouchableOpacity>
-          <CustomToast visible={toastVisible} message={toastMessage}/> 
         </View>
         {/* <View style={{paddingTop:5,flexDirection:"row"}}>
       
@@ -275,10 +302,7 @@ const style = StyleSheet.create({
     textAlign: "center",
   },
   forget: { color: "white", textAlign: "right" },
-  signup: {},
+  icon: { position: "absolute", alignSelf: "flex-end", bottom: 10, right: 10 },
 });
 export default Login;
 
-function getResponsiveFontSize(basePercentage: number) {
-  throw new Error("Function not implemented.");
-}

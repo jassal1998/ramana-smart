@@ -1,5 +1,5 @@
 import { createDrawerNavigator } from "@react-navigation/drawer";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -16,6 +16,7 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
 import CustomToast from "../customTost/Tost";
+import { jwtDecode } from "jwt-decode";
 
 const Drawer = createDrawerNavigator();
 const { width } = Dimensions.get("window");
@@ -26,7 +27,27 @@ const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
 const [isLoading, setIsLoading] = useState(false);
 
+const [role, setRole] = useState<string>("");
+const [id, setId] = useState<string>("");
+let decoded: any = null;
 
+
+useEffect(() => {
+  const fetchToken = async () => {
+    try {
+      const saveToken: any = await AsyncStorage.getItem("userToken");
+      decoded = jwtDecode(saveToken);
+      setId(decoded.userid);
+      setRole;
+      decoded.role;
+      console.log(decoded, "smddy");
+    } catch (error) {
+      console.error("Error fetching token:", error);
+    }
+  };
+  fetchToken();
+  console.log("TokenDecoded :", decoded);
+}, []);
 
  const handleLogout = async () => {
    setIsLoading(true); // Start loading when logout process starts
@@ -44,10 +65,7 @@ const [isLoading, setIsLoading] = useState(false);
      setToastMessage("Logout Successful");
      setToastVisible(true);
 
-     // Reset the toast visibility after 2 seconds
-     setTimeout(() => {
-       setToastVisible(false);
-     }, 2000);
+     
 
      // Navigate to the Login screen after successful logout
      navigation.reset({
@@ -68,7 +86,6 @@ const [isLoading, setIsLoading] = useState(false);
      setIsLoading(false); // Stop loading when the logout process is complete
    }
  };
-
 
 
 
@@ -101,6 +118,9 @@ const [isLoading, setIsLoading] = useState(false);
                 style={style.image}
               />
             </View>
+
+            {role !== "technician" && (
+              <>
             <TouchableOpacity
               style={style.button}
               onPress={() =>
@@ -128,24 +148,31 @@ const [isLoading, setIsLoading] = useState(false);
                 style={style.icon}
               />
               <Text allowFontScaling={false} style={style.text}>
-                Assignedlead
+                Assigned lead
               </Text>
             </TouchableOpacity>
+              </>
+            )}
 
-            <TouchableOpacity
-              style={style.button}
-              onPress={() => navigation.navigate("AttendanceLead")}
-            >
-              <Ionicons
-                name="pencil"
-                size={20}
-                color="white"
-                style={style.icon}
-              />
-              <Text allowFontScaling={false} style={style.text}>
-                Attendance
-              </Text>
-            </TouchableOpacity>
+            {role === "technician" && (
+              <>
+                <TouchableOpacity
+                  style={style.button}
+                  onPress={() => navigation.navigate("AttendanceLead")}
+                >
+                  <Ionicons
+                    name="pencil"
+                    size={20}
+                    color="white"
+                    style={style.icon}
+                  />
+                  <Text allowFontScaling={false} style={style.text}>
+                    Attendance
+                  </Text>
+                </TouchableOpacity>
+              </>
+            )}
+
             <TouchableOpacity
               style={style.logoutContainer}
               onPress={handleLogout}
@@ -167,7 +194,11 @@ const [isLoading, setIsLoading] = useState(false);
                 style={[style.loader, { transform: [{ scale: 2 }] }]}
               />
             )}
-            <CustomToast visible={toastVisible} message={toastMessage} />
+            <CustomToast
+              visible={toastVisible}
+              message={toastMessage}
+              duration={15000}
+            />
           </View>
         )}
       >

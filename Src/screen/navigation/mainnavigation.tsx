@@ -26,15 +26,29 @@ const Stack = createStackNavigator();
 interface MainNavigatorProps {}
 
 const MainNavigation: React.FC<MainNavigatorProps> = () => {
-  const [isUserIn, setIsUserIn] = useState<boolean>(false);
-  const [showButton, setShowButton] = useState<boolean>(true);
+  ;
   const [id, setId] = useState<string>("");
+   const [role, setRole] = useState<string>("");
   const navigation: any = useNavigation();
+   let decoded: any = null;
+useEffect(() => {
+  const fetchToken = async () => {
+    try {
+      const saveToken: any = await AsyncStorage.getItem("userToken");
+      decoded = jwtDecode(saveToken);
+      setId(decoded.userid);
+      setRole;decoded.role;
+      console.log(decoded, "smddy");
+    } catch (error) {
+      console.error("Error fetching token:", error);
+    }
+  };
+  fetchToken();
+  console.log("TokenDecoded :", decoded);
+}, []);
 
 
-   ;
-
-
+   
 
 
 
@@ -55,18 +69,37 @@ const MainNavigation: React.FC<MainNavigatorProps> = () => {
             headerShown: false,
           }}
         />
+
         <Stack.Screen name="Forget" component={Forget} />
-        <Stack.Screen
-          name="Attendance"
-          component={Attendance}
-          options={{
-            title: "Attendance",
-            headerStyle: { backgroundColor: "rgb(30,129,176)" },
-            headerTintColor: "white",
-            headerBackTitle: "",
-            headerTitleAlign: "center",
-          }}
-        />
+
+        {role === "techincian" && (
+          <>
+            <Stack.Screen
+              name="Attendance"
+              component={Attendance}
+              options={{
+                title: "Attendance",
+                headerStyle: { backgroundColor: "rgb(30,129,176)" },
+                headerTintColor: "white",
+                headerBackTitle: "",
+                headerTitleAlign: "center",
+              }}
+            />
+            <Stack.Screen
+              name="AttendanceLead"
+              component={AttendanceLead}
+              options={{
+                title: "Attendance Lead",
+                headerStyle: { backgroundColor: "rgb(30,129,176)" },
+                headerBackTitle: "",
+                gestureEnabled: true,
+                headerTintColor: "white",
+                headerTitleAlign: "center",
+              }}
+            />
+          </>
+        )}
+
         <Stack.Screen name="Otpverify" component={Otpverify} />
         <Stack.Screen name="CreatePassword" component={CreatePassword} />
         <Stack.Screen name="Otp" component={Otp} />
@@ -97,24 +130,15 @@ const MainNavigation: React.FC<MainNavigatorProps> = () => {
           component={Mydrawer}
           options={{ headerShown: false, gestureEnabled: false }}
         />
-        <Stack.Screen
-          name="AttendanceLead"
-          component={AttendanceLead}
-          options={{
-            headerStyle: { backgroundColor: "rgb(30,129,176)" },
-            headerBackTitle: "",
-            gestureEnabled: true,
-            headerTintColor: "white",
-            headerTitleAlign: "center",
-          }}
-        />
+
         <Stack.Screen
           name="Assignedlead"
           component={Assignedlead}
           options={{
+            title : "Assigned lead",
             headerStyle: { backgroundColor: "rgb(30,129,176)" },
             headerBackTitle: "",
-            gestureEnabled: true,
+            gestureEnabled: false,
             headerTintColor: "white",
             headerTitleAlign: "center",
           }}
