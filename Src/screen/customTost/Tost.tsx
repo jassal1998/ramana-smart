@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     alignItems: "center",  
   },
   toastContainer: {
-    width: 200,  
+    width: 260,  
     backgroundColor: "rgba(0, 0, 0, 0.8)",
     borderRadius: 10,
     paddingVertical: 15,
@@ -63,11 +63,11 @@ const styles = StyleSheet.create({
   },
   toastText: {
     color: "white",
-    fontSize: 13,  // Increased font size for better readability
-    textAlign: "center",  // Ensure text is centered
-    width: "100%",  // Make sure text takes full width
-    flexWrap: "wrap",  // Allow wrapping if text is too long
-    overflow: "visible",  // Allow overflow to wrap properly
+    fontSize: 13,  
+    textAlign: "center",  
+    width: "100%", 
+    flexWrap: "wrap", 
+    overflow: "visible",  
   },
 });
 

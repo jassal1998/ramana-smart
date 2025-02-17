@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 export const initialState = {
-  assignData: [], // Store the actual card data
+  assignData: [], 
   error: null, // for error message
   loading: false,
   headers: {} // Only store necessary headers, or omit it completely

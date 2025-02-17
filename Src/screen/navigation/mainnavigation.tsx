@@ -29,6 +29,7 @@ const MainNavigation: React.FC<MainNavigatorProps> = () => {
   ;
   const [id, setId] = useState<string>("");
    const [role, setRole] = useState<string>("");
+   const [department, setDepartment] = useState<string>("");
   const navigation: any = useNavigation();
    let decoded: any = null;
 useEffect(() => {
@@ -37,7 +38,7 @@ useEffect(() => {
       const saveToken: any = await AsyncStorage.getItem("userToken");
       decoded = jwtDecode(saveToken);
       setId(decoded.userid);
-      setRole;decoded.role;
+      setDepartment(decoded.department);
       console.log(decoded, "smddy");
     } catch (error) {
       console.error("Error fetching token:", error);
@@ -72,7 +73,7 @@ useEffect(() => {
 
         <Stack.Screen name="Forget" component={Forget} />
 
-        {role === "techincian" && (
+        {department.toUpperCase() === "TECHNICIAN" && (
           <>
             <Stack.Screen
               name="Attendance"
@@ -135,7 +136,7 @@ useEffect(() => {
           name="Assignedlead"
           component={Assignedlead}
           options={{
-            title : "Assigned lead",
+            title: "Assigned lead",
             headerStyle: { backgroundColor: "rgb(30,129,176)" },
             headerBackTitle: "",
             gestureEnabled: false,

@@ -14,23 +14,30 @@
     },
     "ios": {
       "supportsTablet": true,
-      "infoPlist": {
-       "NSLocationWhenInUseUsageDescription": "This app requires access to your location to track your movement.",
-        "NSLocationAlwaysUsageDescription": "We need background location access to update your location even when the app is closed.",
-        "UIBackgroundModes": ["location"]
+    "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "We need your location to provide tracking services.",
+        "NSLocationAlwaysUsageDescription": "We need your location for tracking in the background.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "We track your location while the app is open and in the background.",
+        "UIBackgroundModes": ["location", "fetch"]
       }
     },
     "android": {
+      
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
+        
       },
       "permissions": [
         "CAMERA",
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+         "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
         "ACCESS_BACKGROUND_LOCATION"
       ],
+      
       "package": "com.devguru93.ramanasmart",
       "versionCode": 2
     },

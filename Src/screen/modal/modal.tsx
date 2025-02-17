@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -14,9 +14,13 @@ import {
 ;
 import { Picker } from "@react-native-picker/picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
+
+import { useDispatch, useSelector } from "react-redux";
+import { leadassigned } from "../../slices/thunk";
 interface CustomModalProps {
   isVisible: boolean; // Modal visibility state
-  onClose: () => void; // Function to close the modal
+  onClose: () => void;
+  leadID:any
 }
 
 const { width, height } = Dimensions.get("window");
@@ -24,45 +28,72 @@ interface Option {
   label: string;
   value: string;
 }
-const Modalpicker: React.FC<CustomModalProps> = ({ isVisible, onClose }) => {
-
-const [selectedOption, setSelectedOption] = useState("cold_call");
-  const [selectedDate, setSelectedDate] = useState(new Date()); 
-const [showDatePicker, setShowDatePicker] = useState(false);
 
 
+const Modalpicker: React.FC<CustomModalProps> = ({
+  isVisible,
+  onClose,
+  leadID,
+}) => {
+  console.log("Received leadId in Modal:", leadID);
+  const [selectedOption, setSelectedOption] = useState("cold_call");
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const dispatch: any = useDispatch();
+  const formData = useSelector(
+    (state: any) => state.Update?.Followupdate || []
+  );
+console.log("sdsd", formData);
+  const options: Option[] = [
+    { label: "Cold Call", value: "cold_call" },
+    { label: "Follow-up Call", value: "follow_up_call" },
+    { label: "Routine Call", value: "routine_call" },
+    { label: "Not Interested", value: "not_interested" },
+    { label: "Won", value: "won" },
+  ];
 
+  const handlePickerChange = (itemValue: string) => {
+    setSelectedOption(itemValue);
+    if (itemValue === "follow_up_call") {
+      setShowDatePicker(true); // Show DatePicker if "Follow-up Call" is selected
+    } else {
+      setShowDatePicker(false); // Hide DatePicker for other options
+    }
+  };
 
-     const options: Option[] = [
-       { label: "Cold Call", value: "cold_call" },
-       { label: "Follow-up Call", value: "follow_up_call" },
-       { label: "Routine Call", value: "routine_call" },
-       { label: "Not Interested", value: "not_interested" },
-       { label: "Won", value: "won" },
-     ];
+  const handleDateChange = (event: any, selectedDate: Date | undefined) => {
+    if (selectedDate) {
+      setSelectedDate(selectedDate);
+    }
+    setShowDatePicker(false); // Close DatePicker after selection
+  };
+  const formattedDate = selectedDate.toLocaleDateString("en-GB");
 
+ const handleSubmit = async () => {
+   if (!leadID) {
+     console.error("Error: leadId is undefined");
+     return;
+   }
+const id = leadID
+   const formData = new FormData();
+   formData.append("id", id);
+   formData.append("status", selectedOption);
+   formData.append("followUpDate", selectedDate.toISOString());
+ 
+   console.log("Dispatching data:", formData);
 
-     
- const handlePickerChange = (itemValue: string) => {
-   setSelectedOption(itemValue);
-   if (itemValue === "follow_up_call") {
-   
-
-
-     setShowDatePicker(true); // Show DatePicker if "Follow-up Call" is selected
-   } else {
-     setShowDatePicker(false); // Hide DatePicker for other options
+   try {
+     const response = await dispatch(leadassigned(formData));
+     console.log("Update successful:", response);
+     onClose(); 
+   } catch (error) {
+     console.error("Update failed:", error);
    }
  };
 
- const handleDateChange = (event: any, selectedDate: Date | undefined) => {
-   if (selectedDate) {
-    
-     setSelectedDate(selectedDate);
-   }
-   setShowDatePicker(false); // Close DatePicker after selection
- };
- const formattedDate = selectedDate.toLocaleDateString("en-GB");
+
+
+  
   return (
     <Modal transparent visible={isVisible} onRequestClose={onClose}>
       <View style={style.modalOverlay}>
@@ -85,18 +116,17 @@ const [showDatePicker, setShowDatePicker] = useState(false);
               />
             ))}
           </Picker>
-          {showDatePicker &&
-            selectedOption === "follow_up_call" && (
-              <View style={style.datePickerContainer}>
-                <Text style={style.datePickerLabel}>Select Date:</Text>
-                <DateTimePicker
-                  value={selectedDate}
-                  mode="date"
-                  display="default"
-                  onChange={handleDateChange}
-                />
-              </View>
-            )}
+          {showDatePicker && selectedOption === "follow_up_call" && (
+            <View style={style.datePickerContainer}>
+              <Text style={style.datePickerLabel}>Select Date:</Text>
+              <DateTimePicker
+                value={selectedDate}
+                mode="date"
+                display="default"
+                onChange={handleDateChange}
+              />
+            </View>
+          )}
           {selectedOption === "follow_up_call" && (
             <View style={style.dateInputContainer}>
               <TextInput
@@ -106,8 +136,8 @@ const [showDatePicker, setShowDatePicker] = useState(false);
               />
             </View>
           )}
-          <TouchableOpacity onPress={onClose} style={style.closeButton}>
-            <Text style={style.closeButtonText}>Sumbit </Text>
+          <TouchableOpacity onPress={handleSubmit} style={style.closeButton}>
+            <Text style={style.closeButtonText}>Submit </Text>
           </TouchableOpacity>
         </View>
       </View>

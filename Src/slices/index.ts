@@ -8,7 +8,7 @@ import SendData from "./lead details/reducer"
 import AttendanceData from "./attendance/reducer"
 import AttendanceLead from "./attendancslead/reducser"
 import Assign from "./assignedlead/reducer"
-
+import  Update from "./assigned/reducer"
 
 const rootReducer = combineReducers({
     Login: LoginReducer,
@@ -16,7 +16,8 @@ const rootReducer = combineReducers({
     SendData:SendData,
      attendance:AttendanceData,
      AttendanceLead:AttendanceLead,
-     Assign:Assign
+     Assign:Assign,
+     Update:Update
 });
 
 export default rootReducer;

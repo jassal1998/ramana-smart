@@ -20,7 +20,7 @@ import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
-import * as ImageManipulator from 'expo-image-manipulator';
+import * as ImageManipulator from "expo-image-manipulator";
 import { Ionicons } from "@expo/vector-icons";
 import { Camera } from "expo-camera";
 import { postData } from "../../slices/lead details/leaddetails";
@@ -50,7 +50,6 @@ const options: Option[] = [
   { label: "won", value: "won" },
 ];
 const Leaddetail = () => {
-  
   const [id, setId] = useState<string>("");
   let decoded: any = null;
   useEffect(() => {
@@ -58,29 +57,28 @@ const Leaddetail = () => {
       try {
         const saveToken: any = await AsyncStorage.getItem("userToken");
         decoded = jwtDecode(saveToken);
-        setId(decoded.userid );
-        
+        setId(decoded.userid);
+
         console.log(decoded, "bbbbbbb");
       } catch (error) {
         console.error("Error fetching token:", error);
       }
     };
     fetchToken();
-    console.log("TokenDecoded :", decoded);  
+    console.log("TokenDecoded :", decoded);
   }, []);
-//   useEffect(() => {
-//   if (id) {
-//     console.log("User ID has been set:", id);
-//   }
-// }, [id]);
-  console.log('hghdf',id)
+  //   useEffect(() => {
+  //   if (id) {
+  //     console.log("User ID has been set:", id);
+  //   }
+  // }, [id]);
+  console.log("hghdf", id);
   const route: any = useRoute();
   const { item } = route.params || {};
   // const { latitude, longitude, address: routeAddress } = route.params || {};
   const dispatch: any = useDispatch();
   // console.log(latitude, "kmfkmkem")
   const send = useSelector((state: any) => state.SendData?.Data);
-  
 
   const [formData, setFormData] = useState({
     retailerName: item?.name || "",
@@ -91,11 +89,11 @@ const Leaddetail = () => {
     followUpDate: item?.followUpDate || "",
     latitudeNew: item?.latitudeNew || "",
     longitudeNew: item?.longitudeNew || "",
-    userid: id ,
+    userid: id,
   });
-console.log("User ID:", id);
-console.log("formmmmm:", formData);
- // console.log(formData.latitudeNew, "latitudeNewlatitudeNew");
+  console.log("User ID:", id);
+  console.log("formmmmm:", formData);
+  // console.log(formData.latitudeNew, "latitudeNewlatitudeNew");
 
   const [address, setAddress] = useState<string>("");
 
@@ -151,9 +149,15 @@ console.log("formmmmm:", formData);
         longitude,
       });
       if (geocodedLocation.length > 0) {
-        const { street, city, country } = geocodedLocation[0];
-        const fullAddress = `${street}, ${city}, ${country}`;
-        setAddress(fullAddress.trim()); // Set the address in the state
+        const addressData = geocodedLocation[0];
+
+        // Use fallbacks in case some fields are missing
+        const street = addressData.street || "";
+        const city = addressData.city || addressData.region || "";
+        const country = addressData.country || "";
+        const fullAddress = [street, city, country].filter(Boolean).join(", ");
+
+        setAddress(fullAddress.trim());
       } else {
         setAddress("Address not found");
       }
@@ -164,20 +168,19 @@ console.log("formmmmm:", formData);
     }
   };
 
- const handlechange = (text:any) => {
-  // Allow only numeric input
-  const cleanedText = text.replace(/[^0-9]/g, '');
+  const handlechange = (text: any) => {
+    const cleanedText = text.replace(/[^0-9]/g, "");
 
-  if (cleanedText.length < 10) {
-    setErrorMessage("Contract number must be at least 10 digits");
-  } else if (cleanedText.length > 10) {
-    setErrorMessage("Contract number should be exactly 10 digits");
-  } else {
-    setErrorMessage("");
-  }
+    if (cleanedText.length < 10) {
+      setErrorMessage("Contract number must be at least 10 digits");
+    } else if (cleanedText.length > 10) {
+      setErrorMessage("Contract number should be exactly 10 digits");
+    } else {
+      setErrorMessage("");
+    }
 
-  setFormData({ ...formData, mobile: cleanedText });
-};
+    setFormData({ ...formData, mobile: cleanedText });
+  };
 
   useEffect(() => {
     if (item) {
@@ -255,7 +258,7 @@ console.log("formmmmm:", formData);
       uri: compressedUri,
       name: "uploaded_image.jpg",
       type: "image/jpeg",
-    }as any );
+    } as any);
 
     return formData;
   };
@@ -280,7 +283,6 @@ console.log("formmmmm:", formData);
 
     if (!result.canceled) {
       try {
-        
         const formData = await handleFile(result.assets[0].uri);
 
         console.log("FormData for Image Upload:", formData);
@@ -300,16 +302,17 @@ console.log("formmmmm:", formData);
   };
 
   const handlePress = async () => {
+    console.log("Current user ID:", id);
 
-   console.log("Current user ID:", id);  
-
-  if (!id) {
-    alert("User ID is not available. Please try again later.");
-    return;
-  }
-    if (!(id|| formData.retailerName || formData.mobile || address || imageUri)) {
+    if (!id) {
+      alert("User ID is not available. Please try again later.");
+      return;
+    }
+    if (
+      !(id || formData.retailerName || formData.mobile || address || imageUri)
+    ) {
       alert("Please fill all required fields and select an image!");
-      return; 
+      return;
     }
     if (formData.mobile.length === 10) {
       console.log("Form submitted with data:", formData);
@@ -317,34 +320,34 @@ console.log("formmmmm:", formData);
 
     try {
       console.log("Image URI:", imageUri);
-       console.log("User ID being sent:", id);
+      console.log("User ID being sent:", id);
 
       if (!imageUri) {
         alert("No image selected!");
-       
+
         return;
       }
       setIsLoading(true);
-       const compressedUri = await compressImage(imageUri); 
+      const compressedUri = await compressImage(imageUri);
 
       const newFormData = new FormData();
       newFormData.append("retailerName", formData.retailerName);
       newFormData.append("mobile", formData.mobile);
-      newFormData.append("userid",id );
+      newFormData.append("userid", id);
       newFormData.append("followUpDate", selectedDate);
       newFormData.append("leadPhase", selectedOption || "");
       newFormData.append("latitude", latitude);
       newFormData.append("longitude", longitude);
       newFormData.append("outletAddress", address);
-      
- console.log("Form Data Submitted:", newFormData)
+
+      console.log("Form Data Submitted:", newFormData);
       // Append the image
       newFormData.append("newImage", {
         uri: compressedUri,
         name: "uploaded_image.jpg",
         type: "image/jpeg",
       } as any);
-console.log("FormData after appending userid:", id);
+      console.log("FormData after appending userid:", id);
       console.log("Form Data neww Submitted:", newFormData);
       await dispatch(postData(newFormData));
       resetFormData();
@@ -427,12 +430,16 @@ console.log("FormData after appending userid:", id);
         ></TextInput>
       </View> */}
       <View style={style.retailer}>
-        <Text allowFontScaling={false} style={style.name}>RETAILER NAME</Text>
-        <Text allowFontScaling={false} style={style.star}>***</Text>
+        <Text allowFontScaling={false} style={style.name}>
+          RETAILER NAME
+        </Text>
+        <Text allowFontScaling={false} style={style.star}>
+          ***
+        </Text>
       </View>
       <View style={{ paddingTop: 10, alignItems: "center" }}>
         <TextInput
-        allowFontScaling={false}
+          allowFontScaling={false}
           value={formData.retailerName}
           onChangeText={(text) =>
             setFormData({ ...formData, retailerName: text })
@@ -441,13 +448,17 @@ console.log("FormData after appending userid:", id);
         ></TextInput>
       </View>
       <View style={style.retailer}>
-        <Text allowFontScaling={false} style={style.name}>CONTACT NO</Text>
-        <Text allowFontScaling={false} style={style.star}>***</Text>
+        <Text allowFontScaling={false} style={style.name}>
+          CONTACT NO
+        </Text>
+        <Text allowFontScaling={false} style={style.star}>
+          ***
+        </Text>
       </View>
 
       <View style={style.inputWrapper}>
         <TextInput
-        allowFontScaling={false}
+          allowFontScaling={false}
           style={style.input}
           value={formData.mobile}
           placeholder="Enter contract number"
@@ -455,20 +466,20 @@ console.log("FormData after appending userid:", id);
           keyboardType="numeric"
           onChangeText={handlechange}
         />
-        
-       
       </View>
       {errorMessage ? (
-       <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-  <Text allowFontScaling={false} style={{ 
-    color: "red", 
-    textAlign: "center", 
-   
-  }}>
-    {errorMessage}
-  </Text>
-</View>
-        ) : null}
+        <View style={{ alignItems: "center", justifyContent: "center" }}>
+          <Text
+            allowFontScaling={false}
+            style={{
+              color: "red",
+              textAlign: "center",
+            }}
+          >
+            {errorMessage}
+          </Text>
+        </View>
+      ) : null}
       {/* <View style={style.retailer}>
         <Text style={style.name}>OUTLET ADDRESS</Text>
         <Text style={style.star}>***</Text>
@@ -482,31 +493,39 @@ console.log("FormData after appending userid:", id);
  </View> */}
 
       <View style={{ flexDirection: "row", left: 20, paddingTop: 10 }}>
-        <Text allowFontScaling={false} style={style.Latitude}>Latitude</Text>
+        <Text allowFontScaling={false} style={style.Latitude}>
+          Latitude
+        </Text>
         <TextInput
-        allowFontScaling={false}
+          allowFontScaling={false}
           value={formData.latitudeNew}
           style={style.num}
           editable={false}
         />
       </View>
       <View style={{ flexDirection: "row", left: 20 }}>
-        <Text allowFontScaling={false} style={style.Latitude}>Longitude</Text>
+        <Text allowFontScaling={false} style={style.Latitude}>
+          Longitude
+        </Text>
         <TextInput
-        allowFontScaling={false}
+          allowFontScaling={false}
           value={formData.longitudeNew}
           style={style.num}
           editable={false}
         />
       </View>
       <View style={style.retailer}>
-        <Text allowFontScaling={false} style={style.name}>OUTLET ADDRESS</Text>
-        <Text allowFontScaling={false} style={style.star}>***</Text>
+        <Text allowFontScaling={false} style={style.name}>
+          OUTLET ADDRESS
+        </Text>
+        <Text allowFontScaling={false} style={style.star}>
+          ***
+        </Text>
       </View>
 
       <View style={{ paddingTop: 10, alignItems: "center" }}>
         <TextInput
-        allowFontScaling={false}
+          allowFontScaling={false}
           value={address}
           style={style.input2}
           editable={true}
@@ -517,7 +536,7 @@ console.log("FormData after appending userid:", id);
       <View style={style.pick}>
         <TouchableOpacity onPress={getLocation} style={style.location}>
           <Text
-          allowFontScaling={false}
+            allowFontScaling={false}
             style={{
               color: "white",
               textAlign: "center",
@@ -530,8 +549,12 @@ console.log("FormData after appending userid:", id);
         </TouchableOpacity>
       </View>
       <View style={style.retailer}>
-        <Text allowFontScaling={false} style={style.name}>LEAD PHASE</Text>
-        <Text allowFontScaling={false} style={style.star}>***</Text>
+        <Text allowFontScaling={false} style={style.name}>
+          LEAD PHASE
+        </Text>
+        <Text allowFontScaling={false} style={style.star}>
+          ***
+        </Text>
       </View>
       <View style={{ paddingTop: 10, alignItems: "center" }}>
         <TouchableOpacity style={style.selector} onPress={togglePicker}>
@@ -551,22 +574,28 @@ console.log("FormData after appending userid:", id);
               style={style.option}
               onPress={() => handleOptionPress(option.value)}
             >
-              <Text allowFontScaling={false} style={style.optionText}>{option.label}</Text>
+              <Text allowFontScaling={false} style={style.optionText}>
+                {option.label}
+              </Text>
             </TouchableOpacity>
           ))}
         </Animated.View>
       </View>
       {selectedOption !== "not_interested" && (
         <View style={style.retailer}>
-          <Text allowFontScaling={false} style={style.name}>FOLLOW UP DATE</Text>
-          <Text allowFontScaling={false} style={style.star}>***</Text>
+          <Text allowFontScaling={false} style={style.name}>
+            FOLLOW UP DATE
+          </Text>
+          <Text allowFontScaling={false} style={style.star}>
+            ***
+          </Text>
         </View>
       )}
       <View style={{ paddingTop: 10, alignItems: "center" }}>
         {selectedOption !== "not_interested" && (
           <View style={style.inputWrapper}>
             <TextInput
-            allowFontScaling={false}
+              allowFontScaling={false}
               style={style.input}
               placeholder="Select a date"
               placeholderTextColor="gray"
@@ -604,15 +633,21 @@ console.log("FormData after appending userid:", id);
       </View>
 
       <View style={style.retailer}>
-        <Text allowFontScaling={false} style={style.name}>NEW IMAGE</Text>
-        <Text allowFontScaling={false} style={style.star}>***</Text>
+        <Text allowFontScaling={false} style={style.name}>
+          NEW IMAGE
+        </Text>
+        <Text allowFontScaling={false} style={style.star}>
+          ***
+        </Text>
       </View>
       <View style={{ paddingTop: 10, alignItems: "center" }}>
         <View style={style.card}>
           {imageUri ? (
             <Image source={{ uri: imageUri }} style={style.image} />
           ) : (
-            <Text allowFontScaling={false} style={style.placeholderText}>No image selected</Text>
+            <Text allowFontScaling={false} style={style.placeholderText}>
+              No image selected
+            </Text>
           )}
 
           <TouchableOpacity style={style.cameraIcon} onPress={openCamera}>
@@ -631,7 +666,9 @@ console.log("FormData after appending userid:", id);
       </View>
       <View style={{ paddingTop: 20, paddingBottom: 20, alignItems: "center" }}>
         <TouchableOpacity onPress={handlePress} style={style.next}>
-          <Text allowFontScaling={false} style={{ color: "white" }}>Submit</Text>
+          <Text allowFontScaling={false} style={{ color: "white" }}>
+            Submit
+          </Text>
           {isLoading && (
             <ActivityIndicator
               size="large"
@@ -670,11 +707,9 @@ const style = StyleSheet.create({
   },
 
   input: {
- padding:10,
- 
-   
+    padding: 10,
+
     width: "100%",
-    
 
     fontSize: 16,
   },
@@ -723,7 +758,7 @@ const style = StyleSheet.create({
   },
   Latitude: { fontSize: 20 },
   num: { padding: 10, bottom: 5 },
-  iconLeft2: { width: 20, height: 20, position:"relative",right:30,},
+  iconLeft2: { width: 20, height: 20, position: "relative", right: 30 },
 
   next: {
     backgroundColor: "rgb(30,129,176)",

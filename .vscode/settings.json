@@ -5,6 +5,7 @@
         "datetimepicker",
         "followupdate",
         "handlechange",
+        "leadassigned",
         "Leaddetail",
         "Leadfolloew",
         "Leadfollow",
@@ -12,6 +13,7 @@
         "leadphase",
         "Modalpicker",
         "savetoken",
-        "setfactory"
+        "setfactory",
+        "Updateassigned"
     ]
 }

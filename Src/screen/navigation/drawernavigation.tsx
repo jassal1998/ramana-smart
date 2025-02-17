@@ -26,7 +26,7 @@ const  Mydrawer = ()=>{
 const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
 const [isLoading, setIsLoading] = useState(false);
-
+const [department, setDepartment] = useState<string>("");
 const [role, setRole] = useState<string>("");
 const [id, setId] = useState<string>("");
 let decoded: any = null;
@@ -38,7 +38,7 @@ useEffect(() => {
       const saveToken: any = await AsyncStorage.getItem("userToken");
       decoded = jwtDecode(saveToken);
       setId(decoded.userid);
-      setRole;
+    setDepartment(decoded.department);
       decoded.role;
       console.log(decoded, "smddy");
     } catch (error) {
@@ -119,42 +119,42 @@ useEffect(() => {
               />
             </View>
 
-            {role !== "technician" && (
+            {department.toUpperCase() !== "TECHNICIAN" && (
               <>
-            <TouchableOpacity
-              style={style.button}
-              onPress={() =>
-                navigation.navigate("Mydrawer", { screen: "LeadFollow" })
-              }
-            >
-              <Ionicons
-                name="navigate"
-                size={20}
-                color="white"
-                style={style.icon}
-              />
-              <Text allowFontScaling={false} style={style.text}>
-                Lead
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={style.button}
-              onPress={() => navigation.navigate("Assignedlead")}
-            >
-              <Ionicons
-                name="pencil"
-                size={20}
-                color="white"
-                style={style.icon}
-              />
-              <Text allowFontScaling={false} style={style.text}>
-                Assigned lead
-              </Text>
-            </TouchableOpacity>
+                <TouchableOpacity
+                  style={style.button}
+                  onPress={() =>
+                    navigation.navigate("Mydrawer", { screen: "LeadFollow" })
+                  }
+                >
+                  <Ionicons
+                    name="navigate"
+                    size={20}
+                    color="white"
+                    style={style.icon}
+                  />
+                  <Text allowFontScaling={false} style={style.text}>
+                    Lead
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={style.button}
+                  onPress={() => navigation.navigate("Assignedlead")}
+                >
+                  <Ionicons
+                    name="pencil"
+                    size={20}
+                    color="white"
+                    style={style.icon}
+                  />
+                  <Text allowFontScaling={false} style={style.text}>
+                    Assigned lead
+                  </Text>
+                </TouchableOpacity>
               </>
             )}
 
-            {role === "technician" && (
+            {department.toUpperCase() === "TECHNICIAN" && (
               <>
                 <TouchableOpacity
                   style={style.button}

@@ -7,6 +7,7 @@ import "./Textconfig"
 
 import { startLocationTracking } from "./loaction";
 import { useEffect } from "react";
+import { Alert } from "react-native";
 
 
 
@@ -15,8 +16,11 @@ import { useEffect } from "react";
 export default function App() {
 
 useEffect(() => {
-  startLocationTracking(); // Start tracking when the app loads
+  console.log("useEffect triggered - Attempting to start location tracking");
+  // Alert.alert("Debug", "useEffect ran, starting tracking");
+  startLocationTracking(); 
 }, []);
+
 
 
 
