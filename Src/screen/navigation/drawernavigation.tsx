@@ -1,8 +1,9 @@
 import { createDrawerNavigator } from "@react-navigation/drawer";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  BackHandler,
   Dimensions,
   ImageBackground,
   StyleSheet,
@@ -11,227 +12,246 @@ import {
   View,
 } from "react-native";
 import LeadFollow from "../leaddetails/leadfollowup";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import Toast from "react-native-toast-message";
 import CustomToast from "../customTost/Tost";
 import { jwtDecode } from "jwt-decode";
 
 const Drawer = createDrawerNavigator();
 const { width } = Dimensions.get("window");
 
-const  Mydrawer = ()=>{
- const navigation:any = useNavigation();
-const [toastVisible, setToastVisible] = useState(false);
+const Mydrawer = () => {
+  const navigation: any = useNavigation();
+  const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
-const [isLoading, setIsLoading] = useState(false);
-const [department, setDepartment] = useState<string>("");
-const [role, setRole] = useState<string>("");
-const [id, setId] = useState<string>("");
-let decoded: any = null;
+  const [isLoading, setIsLoading] = useState(false);
+  const [department, setDepartment] = useState<string | null>(null);
+  const [id, setId] = useState<string | null>(null);
+  const [showContent, setShowContent] = useState(true);
 
+  useEffect(() => {
+    const fetchToken = async () => {
+      try {
+        const saveToken: any = await AsyncStorage.getItem("userToken");
+        if (saveToken) {
+          const decoded: any = jwtDecode(saveToken);
+          setId(decoded?.userid || null);
+          setDepartment(decoded?.department || null);
 
-useEffect(() => {
-  const fetchToken = async () => {
+          if (!decoded?.department) {
+            setShowContent(false);
+          }
+        } else {
+          setShowContent(false);
+        }
+      } catch (error) {
+        console.error("Error fetching token:", error);
+        setShowContent(false);
+      }
+    };
+
+    fetchToken();
+  }, []);
+
+  const handleLogout = async () => {
+    setIsLoading(true);
     try {
-      const saveToken: any = await AsyncStorage.getItem("userToken");
-      decoded = jwtDecode(saveToken);
-      setId(decoded.userid);
-    setDepartment(decoded.department);
-      decoded.role;
-      console.log(decoded, "smddy");
-    } catch (error) {
-      console.error("Error fetching token:", error);
+      await AsyncStorage.removeItem("userToken");
+      await AsyncStorage.removeItem("user_id");
+
+      setToastMessage("Logout Successful");
+      setToastVisible(true);
+
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Login" }],
+      });
+    } catch (error: any) {
+      setToastMessage("Logout Failed");
+      setToastVisible(true);
+      console.error("Error during logout:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
-  fetchToken();
-  console.log("TokenDecoded :", decoded);
-}, []);
-
- const handleLogout = async () => {
-   setIsLoading(true); // Start loading when logout process starts
-
-   try {
-     // Remove tokens and other sensitive data
-     await AsyncStorage.removeItem("userToken");
-     await AsyncStorage.removeItem("user_id");
-
-     // Check if token is removed
-     const token = await AsyncStorage.getItem("userToken");
-     console.log("Token after logout: ", token); // Should be null after removal
-
-     // If everything is successful, show toast and navigate
-     setToastMessage("Logout Successful");
-     setToastVisible(true);
-
-     
-
-     // Navigate to the Login screen after successful logout
-     navigation.reset({
-       index: 0,
-       routes: [{ name: "Login" }], // Redirect to Login screen
-     });
-   } catch (error: any) {
-     // If there's an error, show the error message in toast
-     setToastMessage("Logout Failed");
-     setToastVisible(true);
-
-     setTimeout(() => {
-       setToastVisible(false);
-     }, 2000);
-
-     console.error("Error during logout:", error);
-   } finally {
-     setIsLoading(false); // Stop loading when the logout process is complete
-   }
- };
 
 
-
+  if (!showContent) {
     return (
-      <Drawer.Navigator
-        initialRouteName="LeadFollow"
-        screenOptions={{
-          drawerStyle: {
-            backgroundColor: "rgb(30,129,176)",
-            width: "80%",
-            borderLeftWidth: 2,
-            borderRightWidth: 2,
-            borderLeftColor: "#000",
-            borderRightColor: "#000",
-            borderRadius: 30,
-            elevation: 10,
-          },
-          drawerLabelStyle: {
-            fontSize: 18,
-            fontWeight: "bold",
-            color: "#333",
-          },
-          drawerType: "slide",
-        }}
-        drawerContent={() => (
-          <View style={style.drawerContent}>
-            <View style={style.container}>
-              <ImageBackground
-                source={require("../../../assets/1669189107737.jpeg")}
-                style={style.image}
-              />
-            </View>
+      <View style={styles.emptyScreen}>
+        <Text style={styles.noDepartmentText}>No department found</Text>
+        <TouchableOpacity style={styles.logoutContainer} onPress={handleLogout}>
+          <Ionicons name="log-in" size={30} color="black" style={styles.icon} />
+          <Text allowFontScaling={false} style={styles.logoutText}>
+            Logout
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+ useFocusEffect(
+   React.useCallback(() => {
+     const onBackPress = () => {
+       Alert.alert(
+         "Exit App",
+         "Are you sure you want to exit?",
+         [
+           { text: "Cancel", style: "cancel" },
+           { text: "Exit", onPress: () => BackHandler.exitApp() },
+         ],
+         { cancelable: false }
+       );
+       return true;
+     };
 
-            {department.toUpperCase() !== "TECHNICIAN" && (
-              <>
-                <TouchableOpacity
-                  style={style.button}
-                  onPress={() =>
-                    navigation.navigate("Mydrawer", { screen: "LeadFollow" })
-                  }
-                >
-                  <Ionicons
-                    name="navigate"
-                    size={20}
-                    color="white"
-                    style={style.icon}
-                  />
-                  <Text allowFontScaling={false} style={style.text}>
-                    Lead
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={style.button}
-                  onPress={() => navigation.navigate("Assignedlead")}
-                >
-                  <Ionicons
-                    name="pencil"
-                    size={20}
-                    color="white"
-                    style={style.icon}
-                  />
-                  <Text allowFontScaling={false} style={style.text}>
-                    Assigned lead
-                  </Text>
-                </TouchableOpacity>
-              </>
-            )}
+     BackHandler.addEventListener("hardwareBackPress", onBackPress);
 
-            {department.toUpperCase() === "TECHNICIAN" && (
-              <>
-                <TouchableOpacity
-                  style={style.button}
-                  onPress={() => navigation.navigate("AttendanceLead")}
-                >
-                  <Ionicons
-                    name="pencil"
-                    size={20}
-                    color="white"
-                    style={style.icon}
-                  />
-                  <Text allowFontScaling={false} style={style.text}>
-                    Attendance
-                  </Text>
-                </TouchableOpacity>
-              </>
-            )}
+     return () =>
+       BackHandler.removeEventListener("hardwareBackPress", onBackPress);
+   }, [])
+ );
 
-            <TouchableOpacity
-              style={style.logoutContainer}
-              onPress={handleLogout}
-            >
-              <Ionicons
-                name="log-in"
-                size={30}
-                color="black"
-                style={style.icon}
-              />
-              <Text allowFontScaling={false} style={style.logoutText}>
-                Logout
-              </Text>
-            </TouchableOpacity>
-            {isLoading && (
-              <ActivityIndicator
-                size="large"
-                color="silver"
-                style={[style.loader, { transform: [{ scale: 2 }] }]}
-              />
-            )}
-            <CustomToast
-              visible={toastVisible}
-              message={toastMessage}
-              duration={15000}
+
+  
+  return (
+    <Drawer.Navigator
+      initialRouteName="LeadFollow"
+      screenOptions={{
+        drawerStyle: {
+          backgroundColor: "rgb(30,129,176)",
+          width: "80%",
+          borderLeftWidth: 2,
+          borderRightWidth: 2,
+          borderLeftColor: "#000",
+          borderRightColor: "#000",
+          borderRadius: 30,
+          elevation: 10,
+        },
+        
+        drawerLabelStyle: {
+          fontSize: 18,
+          fontWeight: "bold",
+          color: "#333",
+        },
+        drawerType: "slide",
+      }}
+      drawerContent={() => (
+        <View style={styles.drawerContent}>
+          <View style={styles.container}>
+            <ImageBackground
+              source={require("../../../assets/1669189107737.jpeg")}
+              style={styles.image}
             />
           </View>
-        )}
-      >
-        <Drawer.Screen
-          name="LeadFollow"
-          component={LeadFollow}
-          options={{
-            title: "Daily Visits",
-            swipeEnabled: false,
-            headerTitleAlign: "center",
-            headerStyle: {
-              backgroundColor: "rgb(30,129,176)",
-            },
-            headerTintColor: "#fff",
-            headerTitleStyle: {
-              fontWeight: "bold",
-              fontSize: 20,
-            },
-            headerRight: () => (
+
+          {department?.toUpperCase() !== "TECHNICIAN" && (
+            <>
               <TouchableOpacity
-                style={{ marginRight: 10 }}
-                onPress={() => navigation.navigate("Leaddetail")}
+                style={styles.button}
+                onPress={() =>
+                  navigation.navigate("Mydrawer", { screen: "LeadFollow" })
+                }
               >
-                <Ionicons name="add-circle-outline" size={28} color="#fff" />
+                <Ionicons
+                  name="navigate"
+                  size={20}
+                  color="white"
+                  style={styles.icon}
+                />
+                <Text allowFontScaling={false} style={styles.text}>
+                  Lead
+                </Text>
               </TouchableOpacity>
-            ),
-          }}
-        />
-      </Drawer.Navigator>
-    );
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => navigation.navigate("Assignedlead")}
+              >
+                <Ionicons
+                  name="pencil"
+                  size={20}
+                  color="white"
+                  style={styles.icon}
+                />
+                <Text allowFontScaling={false} style={styles.text}>
+                  Assigned lead
+                </Text>
+              </TouchableOpacity>
+            </>
+          )}
+
+          {department?.toUpperCase() === "TECHNICIAN" && (
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => navigation.navigate("AttendanceLead")}
+            >
+              <Ionicons
+                name="pencil"
+                size={20}
+                color="white"
+                style={styles.icon}
+              />
+              <Text allowFontScaling={false} style={styles.text}>
+                Attendance
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          <TouchableOpacity
+            style={styles.logoutContainer}
+            onPress={handleLogout}
+          >
+            <Ionicons
+              name="log-in"
+              size={30}
+              color="black"
+              style={styles.icon}
+            />
+            <Text allowFontScaling={false} style={styles.logoutText}>
+              Logout
+            </Text>
+          </TouchableOpacity>
+
+          {isLoading && (
+            <ActivityIndicator
+              size="large"
+              color="silver"
+              style={[styles.loader, { transform: [{ scale: 2 }] }]}
+            />
+          )}
+          <CustomToast
+            visible={toastVisible}
+            message={toastMessage}
+            duration={15000}
+          />
+        </View>
+      )}
+    >
+      <Drawer.Screen
+        name="LeadFollow"
+        component={LeadFollow}
+        options={{
+          title: "Daily Visits",
+          swipeEnabled: false,
+          headerTitleAlign: "center",
+          headerStyle: { backgroundColor: "rgb(30,129,176)" },
+          headerTintColor: "#fff",
+          headerTitleStyle: { fontWeight: "bold", fontSize: 20 },
+          headerRight: () => (
+            <TouchableOpacity
+              style={{ marginRight: 10 }}
+              onPress={() => navigation.navigate("Leaddetail")}
+            >
+              <Ionicons name="add-circle-outline" size={28} color="#fff" />
+            </TouchableOpacity>
+          ),
+        }}
+      />
+    </Drawer.Navigator>
+  );
 };
 
-const style = StyleSheet.create({
+const styles = StyleSheet.create({
   drawerContent: {
     flex: 1,
     justifyContent: "center",
@@ -283,6 +303,18 @@ const style = StyleSheet.create({
     bottom: 350,
     color: "red",
     position: "absolute",
+  },
+  emptyScreen: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "white",
+  },
+  noDepartmentText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "black",
+    textAlign: "center",
   },
 });
 

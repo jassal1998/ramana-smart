@@ -14,30 +14,41 @@
     },
     "ios": {
       "supportsTablet": true,
-    "infoPlist": {
+      "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "We need your location to provide tracking services.",
         "NSLocationAlwaysUsageDescription": "We need your location for tracking in the background.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "We track your location while the app is open and in the background.",
-        "UIBackgroundModes": ["location", "fetch"]
+        "UIBackgroundModes": [
+          "location",
+          "fetch"
+        ]
       }
     },
     "android": {
-      
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-        
       },
       "permissions": [
         "CAMERA",
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
         "ACCESS_BACKGROUND_LOCATION",
-         "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION",
-        "ACCESS_BACKGROUND_LOCATION"
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+         "FOREGROUND_SERVICE",
+        "REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"
       ],
-      
+      "foregroundService": {
+        "notificationTitle": "Tracking Active",
+        "notificationBody": "Your location is being updated in the background"
+      },
+      "config": {
+    "googleMaps": {
+      "apiKey": "YOUR_GOOGLE_MAPS_API_KEY"
+    }
+  },
+
       "package": "com.devguru93.ramanasmart",
       "versionCode": 3
     },
@@ -46,10 +57,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": "66a3baa3-e8a7-4352-bd91-01c9d1cab848"
+        "projectId": "3c77e462-8bdf-4a8a-9fc4-68e7489f3f4c"
       }
     },
-    "owner": "devguru93",
     "plugins": [
       [
         "expo-location",

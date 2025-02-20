@@ -9,6 +9,8 @@ import AttendanceData from "./attendance/reducer"
 import AttendanceLead from "./attendancslead/reducser"
 import Assign from "./assignedlead/reducer"
 import  Update from "./assigned/reducer"
+import  selflead from "./selflead/reducer"
+
 
 const rootReducer = combineReducers({
     Login: LoginReducer,
@@ -17,7 +19,8 @@ const rootReducer = combineReducers({
      attendance:AttendanceData,
      AttendanceLead:AttendanceLead,
      Assign:Assign,
-     Update:Update
+     Update:Update,
+     selflead:selflead
 });
 
 export default rootReducer;

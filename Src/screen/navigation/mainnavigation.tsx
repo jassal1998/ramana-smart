@@ -21,6 +21,7 @@ import { jwtDecode } from "jwt-decode";
 import Attendance from "../leaddetails/attendancs";
 import { useSelector } from "react-redux";
 import Assignedlead from "../assignedlead/assignedlead";
+import SelfLead from "../assignedlead/selflead";
 
 const Stack = createStackNavigator();
 interface MainNavigatorProps {}
@@ -73,7 +74,7 @@ useEffect(() => {
 
         <Stack.Screen name="Forget" component={Forget} />
 
-        {department.toUpperCase() === "TECHNICIAN" && (
+        {department === "TECHNICIAN" && (
           <>
             <Stack.Screen
               name="Attendance"
@@ -111,7 +112,7 @@ useEffect(() => {
             title: "Create Lead",
             headerStyle: { backgroundColor: "rgb(30,129,176)" },
             headerBackTitle: "",
-            gestureEnabled: true,
+            gestureEnabled: false,
             headerTintColor: "white",
             headerTitleAlign: "center",
           }}
@@ -137,6 +138,27 @@ useEffect(() => {
           component={Assignedlead}
           options={{
             title: "Assigned lead",
+            headerStyle: { backgroundColor: "rgb(30,129,176)" },
+            headerBackTitle: "",
+            gestureEnabled: false,
+            headerTintColor: "white",
+            headerTitleAlign: "center",
+            headerRight: () => (
+              <TouchableOpacity
+                style={{ marginRight: 10 }}
+                onPress={() => navigation.navigate("SelfLead")}
+              >
+                <Ionicons name="add-circle-outline" size={28} color="#fff" />
+              </TouchableOpacity>
+            ),
+          }}
+        />
+
+        <Stack.Screen
+          name="SelfLead"
+          component={SelfLead}
+          options={{
+            title:"Self Lead",
             headerStyle: { backgroundColor: "rgb(30,129,176)" },
             headerBackTitle: "",
             gestureEnabled: false,

@@ -108,7 +108,7 @@ const Login = () => {
 
  useEffect(() => {
    const checkToken = async () => {
-     setIsLoading(true); // Ensure loading state is set
+     setIsLoading(true); 
      try {
        const token = await AsyncStorage.getItem("userToken");
        console.log("Retrieved token:", token);

@@ -18,9 +18,8 @@ interface AttendanceItem {
 }
 
 const AttendanceLead = () => {
-
   const [id, setId] = useState<string>("");
-  
+
   let decoded: any = null;
   useEffect(() => {
     const fetchToken = async () => {
@@ -38,15 +37,13 @@ const AttendanceLead = () => {
     console.log("TokenDecoded :", decoded);
   }, []);
 
-   
-
   const dispatch: any = useDispatch();
   const navigation: any = useNavigation();
   const route: any = useRoute();
   const [showButton, setShowButton] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [status, setStatus] = useState<"IN" | "OUT" | null>();
-  
+  const [forceUpdate, setForceUpdate] = useState(false);
   const attendanceData = useSelector(
     (state: any) => state.AttendanceLead?.Lead
   );
@@ -58,65 +55,78 @@ const AttendanceLead = () => {
     dispatch(fetchAttendanceData(id));
   }, [dispatch, id]);
 
- 
-
-   const getStatusColor = (inTime: string | null, outTime: string | null) => {
-     if (outTime) {
-       setShowButton(true); 
-       return "red";
-     }
-     if (inTime) {
-       setShowButton(false); 
-       return "green";
-     }
-     return "gray";
-   };
-
+  const getStatusColor = (inTime: string | null, outTime: string | null) => {
+    if (outTime) {
+      setShowButton(true);
+      return "red";
+    }
+    if (inTime) {
+      setShowButton(false);
+      return "green";
+    }
+    return "gray";
+  };
 
   const dataArray: AttendanceItem[] = attendanceData
     ? Object.values(attendanceData)
     : [];
 
-    const handleRefresh = async () => {
-      setIsRefreshing(true); 
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await dispatch(fetchAttendanceData(id));
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+
+  useEffect(() => {
+    const getStatusFromStorage = async () => {
       try {
-        await dispatch(fetchAttendanceData(id)); 
-      } finally {
-        setIsRefreshing(false); 
+        const storedStatus = await AsyncStorage.getItem("status");
+        console.log("Status in async storage:", storedStatus);
+
+        if (storedStatus === "OUT") {
+          setStatus("OUT");
+        } else if (storedStatus === "IN") {
+          setStatus("IN");
+        } else {
+          setStatus(null);
+        }
+      } catch (error) {
+        console.error("Error fetching status from AsyncStorage:", error);
+        setStatus(null);
       }
     };
-useEffect(() => {
- 
-  const getStatusFromStorage = async () => {
-    const storedStatus:any  = await AsyncStorage.getItem("status");
-    setStatus(storedStatus); // Update the local state
-  };
-  getStatusFromStorage();
-}, []);
- useEffect(() => {
-  console.log("Current Status:", status);
-   navigation.setOptions({
-     headerRight: () => {
-       if (status === "OUT") {
-         return (
-           <TouchableOpacity
-             style={{ marginRight: 10 }}
-             onPress={() =>
-               navigation.navigate("Attendance", {
-                 reset: true,
-                 key: Date.now().toString(),
-               })
-             }
-           >
-             <Ionicons name="add-circle-outline" size={28} color="#fff" />
-           </TouchableOpacity>
-         );
-       }
-       return null; 
-     },
-   });
- }, [status, navigation]);
 
+    getStatusFromStorage();
+  }, []);
+
+
+  useEffect(() => {
+    console.log("Current Status:", status);
+    navigation.setOptions({
+      headerRight: () => {
+        if (status === "OUT" || status === null) {
+          return (
+            <TouchableOpacity
+              style={{ marginRight: 10 }}
+              onPress={() =>
+                navigation.navigate("Attendance", {
+                  reset: true,
+                  key: Date.now().toString(),
+                })
+              }
+            >
+              <Ionicons name="add-circle-outline" size={28} color="#fff" />
+            </TouchableOpacity>
+          );
+        }
+        return null;
+      },
+    });
+  }, [status, navigation]);
 
   const renderCompanyCard = ({ item }: { item: AttendanceItem }) => (
     <TouchableOpacity

@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  Linking,
   Platform,
   StyleSheet,
   Text,
@@ -15,7 +16,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchAssigned, leadassigned } from "../../slices/thunk";
 import { Picker } from "@react-native-picker/picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import CustomToast from "../customTost/Tost";
+
+
 
 interface Option {
   label: string;
@@ -30,79 +32,59 @@ const options: Option[] = [
   { label: "Won", value: "won" },
 ];
 
-const Assignedlead = () => {
-  const [id, setId] = useState<string>("");
+
+const LeadCard = ({ lead }: { lead: any }) => {
+  const dispatch: any = useDispatch();
+
+  
   const [selectedOption, setSelectedOption] = useState("cold_call");
+  const [tempDate, setTempDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [pendingLeadId, setPendingLeadId] = useState<string>("");
-  const [tempDate, setTempDate] = useState(new Date());
-  const [toastVisible, setToastVisible] = useState(false);
-    const [toastMessage, setToastMessage] = useState("");
-    const [isLoading, setIsLoading] = useState(false); 
-  let decoded: any = null;
+  const [isLoading, setIsLoading] = useState(false);
+  const [remarks, setRemarks] = useState("");
 
-  useEffect(() => {
-    const fetchToken = async () => {
-      try {
-        const saveToken: any = await AsyncStorage.getItem("userToken");
-        decoded = jwtDecode(saveToken);
-        setId(decoded.employeeId);
-      } catch (error) {
-        console.error("Error fetching token:", error);
-      }
-    };
-    fetchToken();
-  }, []);
+  
 
-  const dispatch: any = useDispatch();
-  useEffect(() => {
-    dispatch(fetchAssigned(id));
-  }, [dispatch, id]);
 
-  const Data = useSelector((state: any) => state.Assign?.assignData || []);
-
- 
-  const formattedDate = selectedDate.toLocaleDateString("en-GB");
-
- 
-  const handleSubmit = async (leadId: string, option: string, date: Date) => {
+  
+  const handleSubmit = async (
+    leadId: string,
+    option: string,
+    date: Date,
+    remarks: string
+  ) => {
+     setIsLoading(true);
+    console.log("Submitting data for lead:", leadId, { option, date, remarks });
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     const formData = new FormData();
     formData.append("id", leadId);
     formData.append("status", option);
     formData.append("followUpDate", date.toISOString());
-
+    formData.append("remarks", remarks);
     try {
       const response = await dispatch(leadassigned(formData));
       console.log("Update successful:", response);
     } catch (error) {
       console.error("Update failed:", error);
     }
+     setIsLoading(false);
   };
 
   
-  const handlePickerChange = async (itemValue: string, leadId: string) => {
+  const handlePickerChange = (itemValue: string) => {
     setSelectedOption(itemValue);
     if (itemValue === "follow_up_call") {
-      
-      setPendingLeadId(leadId);
-      setTempDate(new Date()); 
+     
+      setTempDate(new Date());
       setShowDatePicker(true);
-    } else {
-      
-      await handleSubmit(leadId, itemValue, selectedDate);
     }
   };
 
-  
-  const handleDateChange = (
-    event: any,
-    date: Date | undefined,
-    leadId: string
-  ) => {
+ 
+  const handleDateChange = (event: any, date: Date | undefined) => {
     if (event.type === "set" && date) {
       setTempDate(date);
-      
       setShowDatePicker(false);
     } else if (event.type === "dismissed") {
       setShowDatePicker(false);
@@ -110,137 +92,189 @@ const Assignedlead = () => {
   };
 
   
-  const confirmDateSelection = async (leadId: string) => {
-    setIsLoading(true);
-    setSelectedDate(tempDate); 
-    await handleSubmit(leadId, "follow_up_call", tempDate);
+ const confirmDateSelection = async () => {
+   setIsLoading(true);
+   setSelectedDate(tempDate);
+   
+   await new Promise((resolve) => setTimeout(resolve, 2000));
+   await handleSubmit(lead.id, "follow_up_call", tempDate, remarks);
+   setIsLoading(false);
+ };
   
-    setPendingLeadId("");
-    setIsLoading(false);
-    setToastMessage("Follow-up date updated successfully!");
-    setToastVisible(true);
-    setTimeout(() => {
-      setToastVisible(false);
-    }, 2000);
+  const getDisplayDate = () => {
+    return tempDate.toLocaleDateString("en-GB");
   };
 
-
-   const getDisplayDate = (leadId: string) => {
-     const dateToShow = pendingLeadId === leadId ? tempDate : selectedDate;
-     return dateToShow.toLocaleDateString("en-GB");
-   };
-
-  
-  const LeadCard = ({ lead }: { lead: any }) => {
-    return (
-      <View style={style.card}>
-        <View style={style.row}>
-          <Text style={style.title}>ID: </Text>
-          <Text style={style.title}>{lead.id}</Text>
-        </View>
-        <View style={style.divider}></View>
-        <View style={style.row}>
-          <Text style={style.title}>Name: </Text>
-          <Text style={style.title}>{lead.leadName}</Text>
-        </View>
-        <View style={style.row}>
-          <Text style={style.text}>Company: </Text>
-          <Text style={style.text}> {lead.companyName}</Text>
-        </View>
-        <View style={style.row}>
-          <Text style={style.text}>Email: </Text>
-          <Text style={style.text}>{lead.email}</Text>
-        </View>
-        <View style={style.row}>
-          <Text style={style.text}>Contact: </Text>
-          <Text style={style.text}>{lead.contactNo}</Text>
-        </View>
-        <View style={style.row}>
-          <Text style={style.text}>Location: </Text>
-          <Text style={style.text}> {lead.location}</Text>
-        </View>
-        <View style={style.row}>
-          <Text style={style.text}>Assigned To: </Text>
-          <Text style={style.text}> {lead.assignedTo}</Text>
-        </View>
-        <View style={style.row}>
-          <Text style={style.text}>Status: </Text>
-          <Text style={style.text}> {lead.status}</Text>
-        </View>
-        <View style={style.row}>
-          <Text style={style.text}>updatedAt: </Text>
-          <Text style={style.text}>
-            {new Date(lead.updatedAt).toLocaleDateString("en-GB")}
-          </Text>
-        </View>
-
-        <View style={style.container2}>
-          <Picker
-            selectedValue={selectedOption}
-            onValueChange={(itemValue) =>
-              handlePickerChange(itemValue, lead.id)
-            }
+  return (
+    <View style={style.card}>
+      <View style={style.row}>
+        <Text style={style.title}>ID: </Text>
+        <Text style={style.title}>{lead.id}</Text>
+      </View>
+      <View style={style.divider}></View>
+      <View style={style.row}>
+        <Text style={style.title}>Name: </Text>
+        <Text style={style.title}>{lead.leadName}</Text>
+      </View>
+      <View style={style.row}>
+        <Text style={style.text}>Company: </Text>
+        <Text style={style.text}>{lead.companyName}</Text>
+      </View>
+      <View style={style.row}>
+        <Text style={style.text}>Email: </Text>
+        <TouchableOpacity
+          onPress={() => {
+            Linking.openURL(`mailto:${lead.email}`).catch((err) =>
+              console.error("Error opening email app:", err)
+            );
+          }}
+        >
+          <Text
             style={[
-              style.picker,
-              Platform.OS === "ios" ? style.iosPicker : style.androidPicker,
+              style.text,
+              { color: "blue", textDecorationLine: "underline" },
             ]}
           >
-            {options.map((option) => (
-              <Picker.Item
-                key={option.value}
-                label={option.label}
-                value={option.value}
-              />
-            ))}
-          </Picker>
+            {lead.email}
+          </Text>
+        </TouchableOpacity>
+      </View>
+      <View style={style.row}>
+        <Text style={style.text}>Contact: </Text>
+        <TouchableOpacity
+          onPress={() => {
+            Linking.openURL(`tel:${lead.contactNo}`).catch((err) =>
+              console.error("Error opening dialer:", err)
+            );
+          }}
+        >
+          <Text
+            style={[
+              style.text,
+              { color: "blue", textDecorationLine: "underline" },
+            ]}
+          >
+            {lead.contactNo}
+          </Text>
+        </TouchableOpacity>
+      </View>
+      <View style={style.row}>
+        <Text style={style.text}>Location: </Text>
+        <Text style={style.text}>{lead.location}</Text>
+      </View>
+      <View style={style.row}>
+        <Text style={style.text}>Assigned To: </Text>
+        <Text style={style.text}>{lead.assignedTo}</Text>
+      </View>
+      <View style={style.row}>
+        <Text style={style.text}>Status: </Text>
+        <Text style={style.text}>{lead.status}</Text>
+      </View>
+      <View style={style.row}>
+        <Text style={style.text}>Updated At: </Text>
+        <Text style={style.text}>
+          {new Date(lead.updatedAt).toLocaleDateString("en-GB")}
+        </Text>
+      </View>
 
-          {selectedOption === "follow_up_call" && (
+      <View style={style.container2}>
+        <Picker
+          selectedValue={selectedOption}
+          onValueChange={(itemValue) => handlePickerChange(itemValue)}
+          style={[
+            style.picker,
+            Platform.OS === "ios" ? style.iosPicker : style.androidPicker,
+          ]}
+        >
+          {options.map((option) => (
+            <Picker.Item
+              key={option.value}
+              label={option.label}
+              value={option.value}
+            />
+          ))}
+        </Picker>
+
+        {selectedOption === "follow_up_call" && (
+          <>
             <View style={style.dateInputContainer}>
               <TextInput
                 style={style.dateInput}
-                value={getDisplayDate(lead.id)}
+                value={getDisplayDate()}
                 editable={false}
               />
             </View>
-          )}
-
-          {selectedOption === "follow_up_call" &&
-            showDatePicker &&
-            pendingLeadId === lead.id && (
+            {showDatePicker && (
               <DateTimePicker
                 value={tempDate}
                 mode="date"
                 display="default"
-                onChange={(event, date) =>
-                  handleDateChange(event, date, lead.id)
-                }
+                onChange={handleDateChange}
               />
             )}
-
-          {selectedOption === "follow_up_call" &&
-            !showDatePicker &&
-            pendingLeadId === lead.id && (
-              <TouchableOpacity
-                style={[style.button, isLoading && { opacity: 0.6 }]}
-                onPress={() => !isLoading && confirmDateSelection(lead.id)}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Text style={style.buttonText}>Confirm Date</Text>
-                )}
-              </TouchableOpacity>
-            )}
-          <CustomToast
-            visible={toastVisible}
-            message={toastMessage}
-            duration={15000}
-          />
-        </View>
+          </>
+        )}
       </View>
-    );
-  };
+
+      <View style={{ marginTop: 10 }}>
+        <TextInput
+          style={style.input}
+          value={remarks}
+          placeholder="Remarks"
+          placeholderTextColor={"white"}
+          onChangeText={setRemarks}
+          multiline
+          numberOfLines={4}
+        />
+      </View>
+
+      <TouchableOpacity
+        style={[style.button, isLoading && { opacity: 0.6 }]}
+        onPress={() => {
+          if (selectedOption === "follow_up_call") {
+            confirmDateSelection();
+          } else {
+            handleSubmit(lead.id, selectedOption, selectedDate, remarks);
+          }
+        }}
+      >
+        {isLoading ? (
+          <View style={{ width: 20, height: 20 }}>
+            <ActivityIndicator size="small" color="#fff" />
+          </View>
+        ) : (
+          <Text style={style.buttonText}>Submit</Text>
+        )}
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+
+const Assignedlead = () => {
+  const [id, setId] = useState<string>("");
+  let decoded: any = null;
+  const dispatch: any = useDispatch();
+
+  useEffect(() => {
+    const fetchToken = async () => {
+      try {
+        const saveToken: any = await AsyncStorage.getItem("userToken");
+        decoded = jwtDecode(saveToken);
+        setId(decoded.employeeId);
+        console.log("sdsds", decoded);
+      } catch (error) {
+        console.error("Error fetching token:", error);
+      }
+    };
+    fetchToken();
+  }, []);
+
+  useEffect(() => {
+    dispatch(fetchAssigned(id));
+  }, [dispatch, id]);
+
+  const Data = useSelector((state: any) => state.Assign?.assignData || []);
 
   return (
     <View style={style.container}>
@@ -316,13 +350,11 @@ const style = StyleSheet.create({
   },
   container2: {
     backgroundColor: "rgb(86, 152, 183)",
-    paddingVertical: 8, 
+    paddingVertical: 8,
     paddingHorizontal: 10,
     borderRadius: 8,
-    
-   
-    flexDirection: "column", 
-    height: "auto", 
+    flexDirection: "column",
+    height: "auto",
   },
   divider: {
     width: "80%",
@@ -334,7 +366,7 @@ const style = StyleSheet.create({
   picker: {
     width: "100%",
     height: 40,
-    alignSelf: "center", // Ensures it stays centered
+    alignSelf: "center",
     marginTop: -40,
   },
   iosPicker: {
@@ -344,7 +376,7 @@ const style = StyleSheet.create({
   androidPicker: {
     marginBottom: -40,
     height: 100,
-    color:'#FFF'
+    color: "#FFF",
   },
   dateInputContainer: {
     width: "100%",
@@ -355,11 +387,19 @@ const style = StyleSheet.create({
     width: "100%",
     height: 40,
     borderColor: "#FFF",
-    color:"#fff",
+    color: "#fff",
     borderWidth: 1,
     borderRadius: 5,
     paddingLeft: 10,
     fontSize: 16,
+  },
+  input: {
+    height: 50,
+    borderColor: "#FFF",
+    backgroundColor: "silver",
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    borderRadius: 5,
   },
 });
 

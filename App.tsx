@@ -5,20 +5,49 @@ import { Provider } from "react-redux";
 import rootReducer from "./Src/slices";
 import "./Textconfig"
 
-import { startLocationTracking } from "./loaction";
+import "./loaction";
 import { useEffect } from "react";
 import { Alert } from "react-native";
-
-
+import * as Location from "expo-location";
+import * as TaskManager from "expo-task-manager";
+import {registerBackgroundFetch} from "./backgroundFetchTask"
 
 
 
 export default function App() {
 
+const LOCATION_TASK_NAME = "background-location-task";
 useEffect(() => {
-  console.log("useEffect triggered - Attempting to start location tracking");
-  // Alert.alert("Debug", "useEffect ran, starting tracking");
-  startLocationTracking(); 
+  const startLocationTracking = async () => {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    const { status: bgStatus } =
+      await Location.requestBackgroundPermissionsAsync();
+
+    if (status !== "granted" || bgStatus !== "granted") {
+      console.error("Permission not granted");
+      console.log("dsdsds",bgStatus)
+      return;
+    }
+
+    const isTaskRegistered:any = await TaskManager.isTaskRegisteredAsync(
+      LOCATION_TASK_NAME
+    );
+    if (!isTaskRegistered) {
+      await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
+        accuracy: Location.Accuracy.High,
+        timeInterval:60000, // 5 minutes
+        distanceInterval: 0, // Updates every 5 minutes regardless of movement
+        foregroundService: {
+          notificationTitle: "Tracking your location",
+          notificationBody: "App is running in the background",
+          notificationColor: "#FF0000",
+        },
+      });
+    }
+  };
+
+  startLocationTracking();
+  registerBackgroundFetch()
 }, []);
 
 
